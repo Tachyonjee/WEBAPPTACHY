@@ -134,15 +134,14 @@ class PracticeSession {
     
     async startSession(mode, subjects, topics, deviceType = 'personal') {
         try {
-            const response = await fetch('/api/students/practice/start', {
+            const response = await fetch('/student/api/start-session', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     mode,
-                    subjects,
+                    subject: subjects[0] || 'Mathematics',
                     topics,
                     device_type: deviceType
                 })

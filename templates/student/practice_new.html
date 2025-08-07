@@ -1,0 +1,361 @@
+{% extends "shared/layout.html" %}
+
+{% block title %}Practice - JEE/NEET Coaching{% endblock %}
+
+{% block extra_head %}
+<style>
+.syllabus-container {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.topic-section {
+    border: 1px solid var(--bs-border-color);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    padding: 1rem;
+}
+
+.subtopic-list {
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.practice-mode-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.practice-mode-card:hover, .practice-mode-card.selected {
+    border-color: var(--bs-primary);
+    transform: translateY(-2px);
+}
+
+.question-container {
+    min-height: 400px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-dumbbell me-2"></i>Practice Session</h2>
+            <p class="text-muted">Choose subjects, topics and start your JEE/NEET practice</p>
+        </div>
+    </div>
+
+    <!-- Subject Selection -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5><i class="fas fa-book me-2"></i>Select Subject</h5>
+                    <div class="row">
+                        {% for subject in subjects %}
+                        <div class="col-md-4 mb-3">
+                            <div class="practice-mode-card card h-100" onclick="selectSubject('{{ subject }}')">
+                                <div class="card-body text-center">
+                                    <div class="display-6 mb-3">
+                                        {% if subject == 'Mathematics' %}
+                                            <i class="fas fa-calculator text-primary"></i>
+                                        {% elif subject == 'Physics' %}
+                                            <i class="fas fa-atom text-success"></i>
+                                        {% elif subject == 'Chemistry' %}
+                                            <i class="fas fa-flask text-warning"></i>
+                                        {% endif %}
+                                    </div>
+                                    <h6>{{ subject }}</h6>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Topic Selection (Hidden initially) -->
+    <div class="row mb-4" id="topicSelection" style="display: none;">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5><i class="fas fa-list me-2"></i>Select Topics for <span id="selectedSubjectName">Mathematics</span></h5>
+                    <div class="syllabus-container" id="topicContainer">
+                        <!-- Topics will be loaded dynamically -->
+                    </div>
+                    <div class="mt-3">
+                        <button class="btn btn-primary" onclick="startPracticeSession()">
+                            <i class="fas fa-play me-2"></i>Start Practice
+                        </button>
+                        <button class="btn btn-secondary ms-2" onclick="goBackToSubjects()">
+                            <i class="fas fa-arrow-left me-2"></i>Back
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Practice Session (Hidden initially) -->
+    <div class="row" id="practiceSession" style="display: none;">
+        <div class="col-md-8">
+            <div class="card question-container">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="text-muted mb-0">Question <span id="currentQuestionNum">1</span> of <span id="totalQuestions">10</span></h6>
+                        <div class="timer" id="questionTimer">02:00</div>
+                    </div>
+                    
+                    <div id="questionContent">
+                        <h5 id="questionText">Loading question...</h5>
+                        
+                        <div class="mt-4" id="optionsContainer">
+                            <!-- Options will be loaded here -->
+                        </div>
+                        
+                        <div class="mt-4">
+                            <button class="btn btn-success" id="submitAnswerBtn" onclick="submitAnswer()">
+                                <i class="fas fa-check me-2"></i>Submit Answer
+                            </button>
+                            <button class="btn btn-outline-secondary ms-2" onclick="skipQuestion()">
+                                <i class="fas fa-forward me-2"></i>Skip
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <!-- Session Stats -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h6><i class="fas fa-chart-bar me-2"></i>Session Progress</h6>
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h4 class="text-success" id="correctAnswers">0</h4>
+                            <small>Correct</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-danger" id="incorrectAnswers">0</h4>
+                            <small>Incorrect</small>
+                        </div>
+                    </div>
+                    <div class="progress mt-2">
+                        <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Current Topic -->
+            <div class="card">
+                <div class="card-body">
+                    <h6><i class="fas fa-tag me-2"></i>Current Topic</h6>
+                    <p class="mb-0" id="currentTopic">Complex Numbers</p>
+                    <small class="text-muted" id="currentSubject">Mathematics - Algebra</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let selectedSubject = null;
+let selectedTopics = [];
+let currentSession = null;
+let sessionStats = { correct: 0, incorrect: 0, current: 0, total: 0 };
+
+async function selectSubject(subject) {
+    selectedSubject = subject;
+    document.getElementById('selectedSubjectName').textContent = subject;
+    
+    // Update UI
+    document.querySelectorAll('.practice-mode-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    event.target.closest('.practice-mode-card').classList.add('selected');
+    
+    // Load topics for the subject
+    await loadTopicsForSubject(subject);
+    
+    // Show topic selection
+    document.getElementById('topicSelection').style.display = 'block';
+}
+
+async function loadTopicsForSubject(subject) {
+    try {
+        const response = await fetch(`/api/syllabus/${subject}`);
+        const syllabusData = await response.json();
+        
+        let topicsHTML = '';
+        Object.keys(syllabusData).forEach(topic => {
+            const subtopics = syllabusData[topic];
+            topicsHTML += `
+                <div class="topic-section">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="${topic}" id="topic_${topic.replace(/\s+/g, '_')}" onchange="toggleTopic('${topic}')">
+                        <label class="form-check-label fw-bold" for="topic_${topic.replace(/\s+/g, '_')}">
+                            ${topic}
+                        </label>
+                    </div>
+                    <div class="subtopic-list mt-2 ms-4">`;
+            
+            subtopics.forEach(subtopic => {
+                topicsHTML += `
+                    <div class="form-check form-check-sm">
+                        <input class="form-check-input" type="checkbox" value="${subtopic}" id="subtopic_${subtopic.replace(/\s+/g, '_')}" data-parent="${topic}">
+                        <label class="form-check-label text-muted" for="subtopic_${subtopic.replace(/\s+/g, '_')}">
+                            ${subtopic}
+                        </label>
+                    </div>`;
+            });
+            
+            topicsHTML += `</div></div>`;
+        });
+        
+        document.getElementById('topicContainer').innerHTML = topicsHTML;
+        
+    } catch (error) {
+        console.error('Error loading topics:', error);
+        PWA.showToast('Error loading topics', 'error');
+    }
+}
+
+function toggleTopic(topic) {
+    const checkbox = document.getElementById(`topic_${topic.replace(/\s+/g, '_')}`);
+    const subtopicCheckboxes = document.querySelectorAll(`[data-parent="${topic}"]`);
+    
+    subtopicCheckboxes.forEach(cb => {
+        cb.checked = checkbox.checked;
+    });
+}
+
+function goBackToSubjects() {
+    document.getElementById('topicSelection').style.display = 'none';
+    document.querySelectorAll('.practice-mode-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+}
+
+async function startPracticeSession() {
+    const selectedTopicCheckboxes = document.querySelectorAll('#topicContainer input[type="checkbox"]:checked');
+    if (selectedTopicCheckboxes.length === 0) {
+        PWA.showToast('Please select at least one topic or subtopic', 'warning');
+        return;
+    }
+    
+    selectedTopics = Array.from(selectedTopicCheckboxes).map(cb => cb.value);
+    
+    try {
+        const response = await fetch('/student/api/start-session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                subject: selectedSubject,
+                topics: selectedTopics
+            })
+        });
+        
+        const data = await response.json();
+        if (response.ok) {
+            currentSession = data.session_id;
+            sessionStats = { correct: 0, incorrect: 0, current: 0, total: data.total_questions };
+            
+            // Hide topic selection, show practice session
+            document.getElementById('topicSelection').style.display = 'none';
+            document.getElementById('practiceSession').style.display = 'block';
+            
+            // Load first question
+            await loadNextQuestion();
+        }
+    } catch (error) {
+        console.error('Error starting session:', error);
+        PWA.showToast('Error starting practice session', 'error');
+    }
+}
+
+async function loadNextQuestion() {
+    try {
+        const response = await fetch(`/api/practice/question/${currentSession}`);
+        const question = await response.json();
+        
+        sessionStats.current++;
+        updateSessionUI();
+        
+        document.getElementById('questionText').innerHTML = question.question_text;
+        
+        let optionsHTML = '';
+        question.options.forEach((option, index) => {
+            optionsHTML += `
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" name="answer" value="${option}" id="option_${index}">
+                    <label class="form-check-label" for="option_${index}">${option}</label>
+                </div>`;
+        });
+        
+        document.getElementById('optionsContainer').innerHTML = optionsHTML;
+        document.getElementById('currentTopic').textContent = question.explanation || 'Sample Question';
+        
+    } catch (error) {
+        console.error('Error loading question:', error);
+    }
+}
+
+function updateSessionUI() {
+    document.getElementById('currentQuestionNum').textContent = sessionStats.current;
+    document.getElementById('totalQuestions').textContent = sessionStats.total;
+    document.getElementById('correctAnswers').textContent = sessionStats.correct;
+    document.getElementById('incorrectAnswers').textContent = sessionStats.incorrect;
+    
+    const progress = (sessionStats.current - 1) / sessionStats.total * 100;
+    document.getElementById('progressBar').style.width = progress + '%';
+}
+
+function submitAnswer() {
+    const selectedAnswer = document.querySelector('input[name="answer"]:checked');
+    if (!selectedAnswer) {
+        PWA.showToast('Please select an answer', 'warning');
+        return;
+    }
+    
+    // For demo purposes, randomly mark as correct/incorrect
+    if (Math.random() > 0.4) {
+        sessionStats.correct++;
+        PWA.showToast('Correct!', 'success');
+    } else {
+        sessionStats.incorrect++;
+        PWA.showToast('Incorrect. Try again!', 'error');
+    }
+    
+    setTimeout(() => {
+        if (sessionStats.current < sessionStats.total) {
+            loadNextQuestion();
+        } else {
+            endSession();
+        }
+    }, 1500);
+}
+
+function skipQuestion() {
+    if (sessionStats.current < sessionStats.total) {
+        loadNextQuestion();
+    } else {
+        endSession();
+    }
+}
+
+function endSession() {
+    const accuracy = ((sessionStats.correct / sessionStats.current) * 100).toFixed(1);
+    alert(`Session Complete!\nCorrect: ${sessionStats.correct}\nIncorrect: ${sessionStats.incorrect}\nAccuracy: ${accuracy}%`);
+    
+    // Reset and go back to subject selection
+    document.getElementById('practiceSession').style.display = 'none';
+    goBackToSubjects();
+}
+</script>
+{% endblock %}

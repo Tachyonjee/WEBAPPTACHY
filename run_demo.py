@@ -59,7 +59,9 @@ def home():
 
 @app.route('/practice')
 def practice():
-    return render_template('student/practice.html', subjects=["Mathematics", "Physics", "Chemistry", "Biology"])
+    return render_template('student/practice_new.html', 
+                         subjects=list(JEE_SYLLABUS.keys()),
+                         syllabus=JEE_SYLLABUS)
 
 @app.route('/progress')
 def progress():
@@ -147,6 +149,105 @@ def switch_role(role):
     else:
         return redirect('/')
 
+# JEE Mains Syllabus Structure
+JEE_SYLLABUS = {
+    "Mathematics": {
+        "Algebra": ["Complex Numbers", "Quadratic Equations", "Sequences and Series", "Permutations and Combinations", "Binomial Theorem", "Mathematical Induction"],
+        "Trigonometry": ["Trigonometric Functions", "Inverse Trigonometric Functions", "Heights and Distances", "Trigonometric Equations"],
+        "Coordinate Geometry": ["Straight Lines", "Circles", "Parabola", "Ellipse", "Hyperbola", "3D Coordinate Geometry"],
+        "Calculus": ["Limits and Continuity", "Differentiation", "Applications of Derivatives", "Integration", "Applications of Integrals", "Differential Equations"],
+        "Statistics and Probability": ["Statistics", "Probability", "Conditional Probability"],
+        "Vector Algebra": ["Vectors", "Scalar and Vector Products", "Applications of Vectors"]
+    },
+    "Physics": {
+        "Mechanics": ["Kinematics", "Laws of Motion", "Work Energy Power", "Rotational Motion", "Gravitation", "Properties of Matter"],
+        "Heat and Thermodynamics": ["Thermal Properties", "Kinetic Theory", "Thermodynamics"],
+        "Waves and Oscillations": ["Simple Harmonic Motion", "Wave Motion", "Sound Waves"],
+        "Electricity and Magnetism": ["Electrostatics", "Current Electricity", "Magnetic Effects", "Electromagnetic Induction", "AC Circuits"],
+        "Optics": ["Ray Optics", "Wave Optics"],
+        "Modern Physics": ["Dual Nature of Matter", "Atoms and Nuclei", "Electronic Devices"]
+    },
+    "Chemistry": {
+        "Physical Chemistry": ["Atomic Structure", "Chemical Bonding", "Thermodynamics", "Chemical Equilibrium", "Ionic Equilibrium", "Redox Reactions", "Electrochemistry"],
+        "Inorganic Chemistry": ["Periodic Table", "S-Block Elements", "P-Block Elements", "D-Block Elements", "F-Block Elements", "Coordination Compounds"],
+        "Organic Chemistry": ["Hydrocarbons", "Haloalkanes", "Alcohols and Ethers", "Aldehydes and Ketones", "Carboxylic Acids", "Amines", "Biomolecules"]
+    }
+}
+
+# Sample Questions Database
+SAMPLE_QUESTIONS = {
+    "Mathematics": {
+        "Complex Numbers": [
+            {
+                "id": 1,
+                "question": "If z = 3 + 4i, find |z|",
+                "options": ["5", "7", "√7", "√25"],
+                "correct": "5",
+                "explanation": "|z| = √(3² + 4²) = √(9 + 16) = √25 = 5"
+            },
+            {
+                "id": 2,
+                "question": "The argument of complex number -1 + i is",
+                "options": ["π/4", "3π/4", "-π/4", "π/2"],
+                "correct": "3π/4",
+                "explanation": "arg(-1 + i) = tan⁻¹(1/-1) + π = -π/4 + π = 3π/4"
+            }
+        ],
+        "Differentiation": [
+            {
+                "id": 3,
+                "question": "What is the derivative of x² + 3x + 2?",
+                "options": ["2x + 3", "2x + 2", "x + 3", "2x"],
+                "correct": "2x + 3",
+                "explanation": "d/dx(x² + 3x + 2) = 2x + 3 + 0 = 2x + 3"
+            },
+            {
+                "id": 4,
+                "question": "Find dy/dx if y = sin(2x)",
+                "options": ["cos(2x)", "2cos(2x)", "-2sin(2x)", "2sin(2x)"],
+                "correct": "2cos(2x)",
+                "explanation": "Using chain rule: dy/dx = cos(2x) × 2 = 2cos(2x)"
+            }
+        ]
+    },
+    "Physics": {
+        "Kinematics": [
+            {
+                "id": 5,
+                "question": "A particle moves with velocity v = 3t² + 2t. Its acceleration at t = 2s is",
+                "options": ["14 m/s²", "12 m/s²", "16 m/s²", "10 m/s²"],
+                "correct": "14 m/s²",
+                "explanation": "a = dv/dt = 6t + 2. At t = 2s, a = 6(2) + 2 = 14 m/s²"
+            },
+            {
+                "id": 6,
+                "question": "An object is thrown vertically upward with speed 20 m/s. Maximum height reached is (g = 10 m/s²)",
+                "options": ["20 m", "25 m", "30 m", "40 m"],
+                "correct": "20 m",
+                "explanation": "h = v²/2g = 20²/(2×10) = 400/20 = 20 m"
+            }
+        ]
+    },
+    "Chemistry": {
+        "Atomic Structure": [
+            {
+                "id": 7,
+                "question": "The maximum number of electrons in d-orbital is",
+                "options": ["6", "8", "10", "14"],
+                "correct": "10",
+                "explanation": "d-orbital has 5 subshells, each can hold 2 electrons, so 5×2 = 10 electrons"
+            },
+            {
+                "id": 8,
+                "question": "Which quantum number determines the shape of orbital?",
+                "options": ["n", "l", "m", "s"],
+                "correct": "l",
+                "explanation": "Azimuthal quantum number (l) determines the shape of the orbital"
+            }
+        ]
+    }
+}
+
 # === API ENDPOINTS FOR FRONTEND ===
 @app.route('/api/students/profile')
 def api_student_profile():
@@ -156,27 +257,61 @@ def api_student_profile():
 def api_student_doubts():
     return jsonify({"doubts": [], "total": 0})
 
+@app.route('/api/syllabus/<subject>')
+def api_get_syllabus(subject):
+    return jsonify(JEE_SYLLABUS.get(subject, {}))
+
+@app.route('/student/api/start-session', methods=['POST'])
 @app.route('/api/practice/start', methods=['POST'])
 def api_start_practice():
     data = request.get_json() or {}
+    subject = data.get('subject', 'Mathematics')
+    topic = data.get('topic', list(JEE_SYLLABUS.get(subject, {}).keys())[0] if subject in JEE_SYLLABUS else 'General')
+    
     return jsonify({
         "session_id": 123, 
         "status": "started",
         "total_questions": 10,
-        "subject": data.get('subject', 'Mathematics')
+        "subject": subject,
+        "topic": topic,
+        "subtopics": JEE_SYLLABUS.get(subject, {}).get(topic, [])
     })
 
 @app.route('/api/practice/question/<int:session_id>')
 def api_get_question(session_id):
+    # Get a random question from available topics
+    all_questions = []
+    for subject in SAMPLE_QUESTIONS.values():
+        for topic_questions in subject.values():
+            all_questions.extend(topic_questions)
+    
+    if all_questions:
+        import random
+        question = random.choice(all_questions)
+        return jsonify({
+            "id": question["id"],
+            "question_text": question["question"],
+            "options": question["options"],
+            "correct_answer": question["correct"],
+            "explanation": question["explanation"],
+            "subject": "Mathematics",
+            "difficulty": "Medium"
+        })
+    
     return jsonify({
         "id": 1,
-        "question_text": "What is the derivative of x²?",
-        "options": ["2x", "x", "2", "x²"],
-        "correct_answer": "2x",
-        "subject": "Mathematics",
-        "topic": "Calculus",
+        "question_text": "Sample question not available",
+        "options": ["A", "B", "C", "D"],
+        "correct_answer": "A",
+        "explanation": "This is a placeholder",
+        "subject": "General",
         "difficulty": "Easy"
     })
+
+@app.route('/api/questions/<subject>/<topic>')
+def api_get_topic_questions(subject, topic):
+    questions = SAMPLE_QUESTIONS.get(subject, {}).get(topic, [])
+    return jsonify({"questions": questions, "total": len(questions)})
 
 if __name__ == '__main__':
     print("Starting Coaching App Demo on port 3000...")
