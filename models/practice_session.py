@@ -53,12 +53,15 @@ class PracticeSession(db.Model, TimestampMixin):
     
     def end_session(self):
         """End the practice session"""
-        self.ended_at = db.func.current_timestamp()
+        from datetime import datetime
+        from models.attempt import Attempt
+        self.ended_at = datetime.utcnow()
         self.is_active = False
         
         # Calculate final stats
-        self.total_questions = len(self.attempts)
-        self.correct_answers = sum(1 for attempt in self.attempts if attempt.is_correct)
+        attempts = Attempt.query.filter_by(session_id=self.id).all()
+        self.total_questions = len(attempts)
+        self.correct_answers = sum(1 for attempt in attempts if attempt.is_correct)
     
     def get_accuracy(self):
         """Get session accuracy"""

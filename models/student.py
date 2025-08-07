@@ -20,4 +20,4 @@ class Student(db.Model, TimestampMixin):
     badges = db.relationship('Badges', backref='student', cascade='all, delete-orphan')
     
     def __repr__(self):
-        return f'<Student {self.user.name}>'
+        return f'<Student {self.id}>'

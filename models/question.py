@@ -43,5 +43,40 @@ class Question(db.Model, TimestampMixin):
             return json.loads(self.options)
         return self.options or {}
     
+    def get_accuracy_rate(self):
+        """Calculate accuracy rate from attempts"""
+        from models.attempt import Attempt
+        attempts = Attempt.query.filter_by(question_id=self.id).all()
+        if not attempts:
+            return 0.0
+        correct = sum(1 for attempt in attempts if attempt.is_correct)
+        return correct / len(attempts)
+    
+    def get_attempt_count(self):
+        """Get total attempt count"""
+        from models.attempt import Attempt
+        return Attempt.query.filter_by(question_id=self.id).count()
+    
+    def get_avg_time_taken(self):
+        """Calculate average time taken"""
+        from models.attempt import Attempt
+        attempts = Attempt.query.filter_by(question_id=self.id).all()
+        if not attempts:
+            return 0.0
+        return sum(attempt.time_taken for attempt in attempts) / len(attempts)
+    
+    # Properties for backward compatibility
+    @property
+    def accuracy_rate(self):
+        return self.get_accuracy_rate()
+    
+    @property
+    def attempt_count(self):
+        return self.get_attempt_count()
+    
+    @property
+    def avg_time_taken(self):
+        return self.get_avg_time_taken()
+    
     def __repr__(self):
         return f'<Question {self.id}: {self.subject} - {self.topic}>'

@@ -15,3 +15,8 @@ class TimestampMixin:
                 value = value.isoformat()
             result[column.name] = value
         return result
+    
+    def save(self):
+        """Save model instance to database"""
+        db.session.add(self)
+        db.session.commit()

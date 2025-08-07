@@ -1,150 +1,142 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+<nav class="navbar navbar-expand-lg navbar-dark">
     <div class="container">
-        <!-- Brand -->
-        <a class="navbar-brand fw-bold" href="{{ url_for('index') }}">
-            <i class="fas fa-graduation-cap me-2"></i>
-            Coaching App
+        <a class="navbar-brand d-flex align-items-center" href="{{ url_for('home') if session.get('user_role') == 'student' else '/' }}">
+            <span class="fs-4 me-2">🎓</span>
+            <span class="fw-bold">Coaching App</span>
         </a>
-        
-        <!-- Mobile Toggle -->
+
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
-        
+
         <div class="collapse navbar-collapse" id="navbarNav">
             {% if session.get('user_id') %}
-                {% set user_role = session.get('user_role') %}
-                
-                <!-- Navigation Links based on role -->
+                <!-- Student Navigation -->
+                {% if session.get('user_role') == 'student' %}
                 <ul class="navbar-nav me-auto">
-                    {% if user_role == 'student' %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('students.home') }}">
-                                <i class="fas fa-home me-1"></i>Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('students.practice') }}">
-                                <i class="fas fa-brain me-1"></i>Practice
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('students.review') }}">
-                                <i class="fas fa-history me-1"></i>Review
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('students.progress') }}">
-                                <i class="fas fa-chart-line me-1"></i>Progress
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('students.lectures') }}">
-                                <i class="fas fa-video me-1"></i>Lectures
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link position-relative" href="{{ url_for('students.doubts') }}">
-                                <i class="fas fa-question-circle me-1"></i>Doubts
-                                <!-- Doubt notification badge would go here -->
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('students.bookmarks') }}">
-                                <i class="fas fa-bookmark me-1"></i>Bookmarks
-                            </a>
-                        </li>
-                    
-                    {% elif user_role == 'operator' %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('operator_dashboard') }}">
-                                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-question me-1"></i>Questions
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ url_for('operator_add_question') }}">Add Question</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('operator_bulk_upload') }}">Bulk Upload</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('operator_question_bank') }}">Question Bank</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('operator_qc') }}">Quality Control</a></li>
-                            </ul>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('operator_lectures') }}">
-                                <i class="fas fa-video me-1"></i>Lectures
-                            </a>
-                        </li>
-                    
-                    {% elif user_role == 'mentor' %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('mentor.insights') }}">
-                                <i class="fas fa-chart-bar me-1"></i>Insights
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('mentor.students') }}">
-                                <i class="fas fa-users me-1"></i>Students
-                            </a>
-                        </li>
-                    
-                    {% elif user_role == 'admin' %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('admin_overview') }}">
-                                <i class="fas fa-crown me-1"></i>Admin
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/admin_app" target="_blank">
-                                <i class="fas fa-analytics me-1"></i>Analytics
-                            </a>
-                        </li>
-                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('home') }}">
+                            <i class="fas fa-home me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('practice') }}">
+                            <i class="fas fa-brain me-1"></i>Practice
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-video me-1"></i>Lectures
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-chart-line me-1"></i>Progress
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link position-relative" href="#">
+                            <i class="fas fa-question-circle me-1"></i>Doubts
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" id="doubts-badge">
+                                0
+                            </span>
+                        </a>
+                    </li>
                 </ul>
-                
+
+                <!-- Gamification Display -->
+                <ul class="navbar-nav me-3">
+                    <li class="nav-item">
+                        <span class="navbar-text streak-indicator me-2">
+                            <i class="fas fa-fire"></i>
+                            <span id="streak-count">0</span>
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <span class="navbar-text points-display">
+                            <i class="fas fa-star"></i>
+                            <span id="points-count">0</span>
+                        </span>
+                    </li>
+                </ul>
+                {% endif %}
+
+                <!-- Operator Navigation -->
+                {% if session.get('user_role') == 'operator' %}
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-database me-1"></i>Question Bank
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-upload me-1"></i>Bulk Upload
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-check-double me-1"></i>Quality Control
+                        </a>
+                    </li>
+                </ul>
+                {% endif %}
+
                 <!-- User Menu -->
                 <ul class="navbar-nav">
-                    <!-- Gamification (for students) -->
-                    {% if user_role == 'student' %}
-                        <li class="nav-item d-flex align-items-center me-3">
-                            <span class="badge bg-warning text-dark me-2">
-                                <i class="fas fa-fire"></i> <span id="streak-count">0</span>
-                            </span>
-                            <span class="badge bg-info">
-                                <i class="fas fa-star"></i> <span id="points-count">0</span>
-                            </span>
-                        </li>
-                    {% endif %}
-                    
-                    <!-- User Dropdown -->
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user-circle me-1"></i>
-                            {{ session.get('user_name', 'User') }}
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                            <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+                                <i class="fas fa-user text-white"></i>
+                            </div>
+                            <span class="d-none d-md-inline">{{ session.get('user_name', 'User') }}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><h6 class="dropdown-header">{{ session.get('user_email', '') }}</h6></li>
+                            <li><h6 class="dropdown-header">{{ session.get('user_name', 'User') }}</h6></li>
+                            <li><span class="dropdown-item-text small text-muted">{{ session.get('user_role', '').title() }}</span></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><span class="dropdown-item-text small">Role: {{ user_role.title() }}</span></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <!-- <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Settings</a></li> -->
                             <li>
-                                <form method="POST" action="{{ url_for('auth.logout') }}" class="d-inline">
-                                    <button type="submit" class="dropdown-item text-danger">
-                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
-                                    </button>
-                                </form>
+                                <a class="dropdown-item" href="#" onclick="toggleTheme()">
+                                    <i class="fas fa-moon me-2"></i>Dark Theme
+                                    <span class="form-check form-switch float-end">
+                                        <input class="form-check-input" type="checkbox" id="theme-toggle" checked>
+                                    </span>
+                                </a>
                             </li>
+                            <li>
+                                <a class="dropdown-item" href="#" onclick="toggleNotifications()">
+                                    <i class="fas fa-bell me-2"></i>Notifications
+                                    <span class="form-check form-switch float-end">
+                                        <input class="form-check-input" type="checkbox" id="notifications-toggle">
+                                    </span>
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#">
+                                <i class="fas fa-bookmark me-2"></i>Bookmarks
+                            </a></li>
+                            {% if session.get('user_role') == 'student' %}
+                            <li><a class="dropdown-item" href="#">
+                                <i class="fas fa-history me-2"></i>Review Attempts
+                            </a></li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" onclick="logout()">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a></li>
                         </ul>
                     </li>
                 </ul>
             {% else %}
-                <!-- Not logged in -->
+                <!-- Guest Navigation -->
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('auth.login') }}">
+                        <a class="nav-link" href="{{ url_for('login') }}">
                             <i class="fas fa-sign-in-alt me-1"></i>Login
                         </a>
                     </li>
@@ -153,3 +145,155 @@
         </div>
     </div>
 </nav>
+
+<script>
+// Navbar functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Update gamification counters
+    updateGamificationCounters();
+    
+    // Check and update notifications
+    checkNotificationPermission();
+    
+    // Set initial theme
+    setInitialTheme();
+    
+    // Update doubts badge
+    updateDoubtsBadge();
+});
+
+async function updateGamificationCounters() {
+    if ('{{ session.get("user_role") }}' !== 'student') return;
+    
+    try {
+        const response = await fetch('/api/students/profile', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            
+            const streakElement = document.getElementById('streak-count');
+            const pointsElement = document.getElementById('points-count');
+            
+            if (streakElement && data.streak) {
+                streakElement.textContent = data.streak.current_streak || 0;
+            }
+            
+            if (pointsElement && data.points) {
+                pointsElement.textContent = data.points.points_total || 0;
+            }
+        }
+    } catch (error) {
+        console.error('Error updating gamification counters:', error);
+    }
+}
+
+async function updateDoubtsBadge() {
+    if ('{{ session.get("user_role") }}' !== 'student') return;
+    
+    try {
+        const response = await fetch('/api/students/doubts?status=open', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            const doubtsCount = data.doubts ? data.doubts.length : 0;
+            
+            const doubtsBadge = document.getElementById('doubts-badge');
+            if (doubtsBadge) {
+                if (doubtsCount > 0) {
+                    doubtsBadge.textContent = doubtsCount;
+                    doubtsBadge.classList.remove('d-none');
+                } else {
+                    doubtsBadge.classList.add('d-none');
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error updating doubts badge:', error);
+    }
+}
+
+function toggleTheme() {
+    const html = document.documentElement;
+    const themeToggle = document.getElementById('theme-toggle');
+    
+    if (html.getAttribute('data-bs-theme') === 'dark') {
+        html.setAttribute('data-bs-theme', 'light');
+        themeToggle.checked = false;
+        localStorage.setItem('theme', 'light');
+    } else {
+        html.setAttribute('data-bs-theme', 'dark');
+        themeToggle.checked = true;
+        localStorage.setItem('theme', 'dark');
+    }
+}
+
+function setInitialTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    const html = document.documentElement;
+    const themeToggle = document.getElementById('theme-toggle');
+    
+    html.setAttribute('data-bs-theme', savedTheme);
+    if (themeToggle) {
+        themeToggle.checked = savedTheme === 'dark';
+    }
+}
+
+async function toggleNotifications() {
+    const notificationsToggle = document.getElementById('notifications-toggle');
+    
+    if (Notification.permission === 'granted') {
+        // Toggle notification preference
+        const enabled = !notificationsToggle.checked;
+        notificationsToggle.checked = enabled;
+        localStorage.setItem('notifications', enabled);
+        
+        if (enabled) {
+            PWA.showToast('Notifications enabled', 'success');
+        } else {
+            PWA.showToast('Notifications disabled', 'info');
+        }
+    } else if (Notification.permission === 'default') {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+            notificationsToggle.checked = true;
+            localStorage.setItem('notifications', true);
+            PWA.showToast('Notifications enabled', 'success');
+        }
+    } else {
+        PWA.showToast('Notifications blocked. Please enable in browser settings.', 'warning');
+    }
+}
+
+function checkNotificationPermission() {
+    const notificationsToggle = document.getElementById('notifications-toggle');
+    if (notificationsToggle) {
+        const enabled = localStorage.getItem('notifications') === 'true' && 
+                       Notification.permission === 'granted';
+        notificationsToggle.checked = enabled;
+    }
+}
+
+function logout() {
+    if (confirm('Are you sure you want to logout?')) {
+        // Clear local storage
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        localStorage.removeItem('user_data');
+        
+        // Redirect to login
+        window.location.href = '/auth/logout';
+    }
+}
+
+// Auto-refresh counters every 30 seconds
+setInterval(updateGamificationCounters, 30000);
+setInterval(updateDoubtsBadge, 60000);
+</script>

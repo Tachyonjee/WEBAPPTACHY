@@ -320,3 +320,7 @@ class AnalyticsService:
                 })
         
         return problematic_questions
+
+
+# Create an instance for importing  
+analytics_service = AnalyticsService()

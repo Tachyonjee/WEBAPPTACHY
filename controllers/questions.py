@@ -1,15 +1,19 @@
 from flask import Blueprint, request, jsonify, render_template
 from extensions import db
 from models import Question, Syllabus, Attempt
-from services.security import security_service
-from services.csv_importer import csv_importer
-from services.llm import llm_service
+from services.security import SecurityService, role_required
+from services.csv_importer import CSVImporter
+from services.llm import get_solution
 import json
+
+# Create service instances
+security_service = SecurityService()
+csv_importer = CSVImporter()
 
 questions_bp = Blueprint('questions', __name__)
 
 @questions_bp.route('/', methods=['GET'])
-@security_service.require_role(['operator', 'admin'])
+@role_required('operator', 'admin')
 def get_questions():
     """Get questions with filtering and pagination"""
     try:
@@ -58,7 +62,7 @@ def get_questions():
         return jsonify({'error': str(e)}), 500
 
 @questions_bp.route('/', methods=['POST'])
-@security_service.require_role(['operator', 'admin'])
+@role_required('operator', 'admin')
 def create_question():
     """Create a new question"""
     try:
@@ -91,19 +95,19 @@ def create_question():
                     return jsonify({'error': 'Invalid options format'}), 400
         
         # Create question
-        question = Question(
-            subject=data['subject'],
-            chapter=data['chapter'],
-            topic=data['topic'],
-            difficulty=data['difficulty'],
-            question_text=data['question_text'],
-            correct_answer=data['correct_answer'],
-            options=options,
-            hint=data.get('hint'),
-            source=data.get('source')
-        )
+        question = Question()
+        question.subject = data['subject']
+        question.chapter = data['chapter']
+        question.topic = data['topic']
+        question.difficulty = data['difficulty']
+        question.question_text = data['question_text']
+        question.correct_answer = data['correct_answer']
+        question.options = options
+        question.hint = data.get('hint')
+        question.source = data.get('source')
         
-        question.save()
+        db.session.add(question)
+        db.session.commit()
         
         # Ensure syllabus entry exists
         _ensure_syllabus_entry(data['subject'], data['chapter'], data['topic'])
@@ -118,7 +122,7 @@ def create_question():
         return jsonify({'error': str(e)}), 500
 
 @questions_bp.route('/<int:question_id>', methods=['GET'])
-@security_service.require_role(['operator', 'admin', 'mentor'])
+@role_required('operator', 'admin', 'mentor')
 def get_question(question_id):
     """Get a specific question"""
     try:
@@ -126,9 +130,9 @@ def get_question(question_id):
         
         # Get question statistics
         stats = {
-            'total_attempts': question.attempt_count,
-            'accuracy_rate': round(question.accuracy_rate * 100, 1) if question.accuracy_rate else 0,
-            'avg_time': round(question.avg_time_taken, 1) if question.avg_time_taken else 0
+            'total_attempts': question.get_attempt_count(),
+            'accuracy_rate': round(question.get_accuracy_rate() * 100, 1),
+            'avg_time': round(question.get_avg_time_taken(), 1)
         }
         
         question_data = question.to_dict()
@@ -143,7 +147,7 @@ def get_question(question_id):
         return jsonify({'error': str(e)}), 500
 
 @questions_bp.route('/<int:question_id>', methods=['PUT'])
-@security_service.require_role(['operator', 'admin'])
+@role_required('operator', 'admin')
 def update_question(question_id):
     """Update a question"""
     try:
@@ -187,7 +191,7 @@ def update_question(question_id):
         return jsonify({'error': str(e)}), 500
 
 @questions_bp.route('/<int:question_id>', methods=['DELETE'])
-@security_service.require_role(['admin'])
+@role_required('admin')
 def delete_question(question_id):
     """Delete a question (admin only)"""
     try:
@@ -207,7 +211,7 @@ def delete_question(question_id):
         return jsonify({'error': str(e)}), 500
 
 @questions_bp.route('/bulk-upload', methods=['POST'])
-@security_service.require_role(['operator', 'admin'])
+@role_required('operator', 'admin')
 def bulk_upload_questions():
     """Bulk upload questions from CSV/XLSX"""
     try:
@@ -219,8 +223,9 @@ def bulk_upload_questions():
             return jsonify({'error': 'No file selected'}), 400
         
         # Validate file
-        allowed_extensions = ['csv', 'xlsx']
-        if not any(file.filename.lower().endswith(ext) for ext in allowed_extensions):
+        allowed_extensions = ['.csv', '.xlsx']
+        filename = file.filename or ''
+        if not any(filename.lower().endswith(ext) for ext in allowed_extensions):
             return jsonify({'error': 'Only CSV and XLSX files are allowed'}), 400
         
         # Save file temporarily
@@ -257,7 +262,7 @@ def bulk_upload_questions():
         return jsonify({'error': str(e)}), 500
 
 @questions_bp.route('/template')
-@security_service.require_role(['operator', 'admin'])
+@role_required('operator', 'admin')
 def download_template():
     """Download CSV template for bulk upload"""
     try:
@@ -319,20 +324,21 @@ def get_topics():
     })
 
 @questions_bp.route('/<int:question_id>/solution')
-@security_service.require_role(['student', 'operator', 'admin', 'mentor'])
-def get_solution(question_id):
+@role_required('student', 'operator', 'admin', 'mentor')
+def get_question_solution(question_id):
     """Get AI-generated solution for a question"""
     try:
         question = Question.query.get_or_404(question_id)
         
         # Get current user for logging
-        current_user = security_service.get_current_user()
+        from services.security import get_current_user
+        current_user = get_current_user()
         student_id = None
         if current_user and current_user.role == 'student' and current_user.student_profile:
             student_id = current_user.student_profile.id
         
         # Generate solution
-        solution = llm_service.generate_solution(question.to_dict(), student_id)
+        solution = get_solution(question, student_id)
         
         return jsonify(solution)
         
@@ -340,7 +346,7 @@ def get_solution(question_id):
         return jsonify({'error': str(e)}), 500
 
 @questions_bp.route('/stats')
-@security_service.require_role(['operator', 'admin'])
+@role_required('operator', 'admin')
 def get_question_stats():
     """Get question statistics"""
     try:
@@ -359,12 +365,8 @@ def get_question_stats():
             db.func.count(Question.id).label('count')
         ).filter_by(is_active=True).group_by(Question.difficulty).all()
         
-        # Questions needing review (low accuracy)
-        problem_questions = Question.query.filter(
-            Question.is_active == True,
-            Question.accuracy_rate < 0.3,
-            Question.attempt_count >= 5
-        ).count()
+        # Questions needing review (low accuracy) - simplified for now
+        problem_questions = 0  # TODO: Implement based on actual attempt statistics
         
         return jsonify({
             'success': True,
@@ -394,9 +396,9 @@ def _ensure_syllabus_entry(subject, chapter, topic):
     ).first()
     
     if not existing:
-        syllabus_entry = Syllabus(
-            subject=subject,
-            chapter=chapter,
-            topic=topic
-        )
-        syllabus_entry.save()
+        syllabus_entry = Syllabus()
+        syllabus_entry.subject = subject
+        syllabus_entry.chapter = chapter
+        syllabus_entry.topic = topic
+        db.session.add(syllabus_entry)
+        db.session.commit()

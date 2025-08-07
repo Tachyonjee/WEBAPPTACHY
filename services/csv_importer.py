@@ -67,6 +67,45 @@ class CSVImporter:
         
         return self._get_validation_result(df, preview_data)
     
+    def validate_file(self, file_path):
+        """Validate file and return errors/warnings"""
+        try:
+            # Read file
+            if file_path.endswith('.csv'):
+                with open(file_path, 'r') as f:
+                    return self.validate_and_preview(f.read().encode('utf-8'), 'csv')
+            else:
+                with open(file_path, 'rb') as f:
+                    return self.validate_and_preview(f.read(), 'xlsx')
+        except Exception as e:
+            return {
+                'is_valid': False,
+                'errors': [f"Error reading file: {str(e)}"],
+                'warnings': [],
+                'preview': [],
+                'total_rows': 0
+            }
+    
+    def get_template_csv(self):
+        """Get CSV template content"""
+        headers = self.REQUIRED_COLUMNS + self.OPTIONAL_COLUMNS
+        sample_row = [
+            'Physics', 'Mechanics', 'Force and Motion', '3',
+            'What is the unit of force?', 'Newton',
+            'Pascal', 'Joule', 'Newton', 'Watt',
+            'Force is measured in Newtons', 'NCERT'
+        ]
+        
+        import csv
+        from io import StringIO
+        
+        output = StringIO()
+        writer = csv.writer(output)
+        writer.writerow(headers)
+        writer.writerow(sample_row)
+        
+        return output.getvalue()
+    
     def import_questions(self, file_content, file_type='csv', dry_run=False):
         """
         Import questions from file
@@ -121,7 +160,7 @@ class CSVImporter:
                 imported_count += 1
             
             except Exception as e:
-                self.errors.append(f"Row {index + 2}: {str(e)}")
+                self.errors.append(f"Row {int(index) + 2}: {str(e)}")
         
         if not dry_run and imported_count > 0:
             try:

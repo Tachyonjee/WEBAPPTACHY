@@ -47,6 +47,7 @@ class Points(db.Model, TimestampMixin):
     points_total = db.Column(db.Integer, default=0, nullable=False)
     points_this_week = db.Column(db.Integer, default=0, nullable=False)
     points_this_month = db.Column(db.Integer, default=0, nullable=False)
+    points_today = db.Column(db.Integer, default=0, nullable=False)
     last_points_reset = db.Column(db.Date, nullable=True)
     
     def add_points(self, points):
@@ -54,6 +55,7 @@ class Points(db.Model, TimestampMixin):
         self.points_total += points
         self.points_this_week += points
         self.points_this_month += points
+        self.points_today += points
     
     def reset_weekly_points(self):
         """Reset weekly points (called by scheduler)"""
@@ -88,12 +90,11 @@ class Badges(db.Model, TimestampMixin):
         """Award a badge to student if not already awarded"""
         existing = Badges.query.filter_by(student_id=student_id, badge_code=badge_code).first()
         if not existing:
-            badge = Badges(
-                student_id=student_id,
-                badge_code=badge_code,
-                badge_name=badge_name,
-                badge_description=badge_description
-            )
+            badge = Badges()
+            badge.student_id = student_id
+            badge.badge_code = badge_code
+            badge.badge_name = badge_name
+            badge.badge_description = badge_description
             db.session.add(badge)
             return badge
         return existing

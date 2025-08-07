@@ -14,6 +14,27 @@ class SecurityService:
     _rate_limit_storage = {}
     
     @staticmethod
+    def require_role(roles):
+        """Decorator to require specific roles"""
+        def decorator(func):
+            @wraps(func)
+            @jwt_required()
+            def wrapper(*args, **kwargs):
+                try:
+                    current_user_id = get_jwt_identity()
+                    user = User.query.get(current_user_id)
+                    
+                    if not user or user.role not in roles:
+                        return jsonify({'error': 'Insufficient permissions'}), 403
+                    
+                    g.current_user = user
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    return jsonify({'error': 'Authentication failed'}), 401
+            return wrapper
+        return decorator
+    
+    @staticmethod
     def generate_secure_token(length=32):
         """Generate a secure random token"""
         return secrets.token_urlsafe(length)
@@ -152,6 +173,10 @@ def get_current_user():
         return User.query.get(current_user_id)
     except:
         return None
+
+
+# Create an instance for importing
+security_service = SecurityService()
 
 def log_security_event(event_type, user_id=None, details=None):
     """Log security-related events (placeholder for future security logging)"""

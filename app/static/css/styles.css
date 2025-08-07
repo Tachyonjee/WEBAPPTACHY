@@ -1,0 +1,416 @@
+/* Custom CSS for Coaching App */
+
+:root {
+    --primary-color: #0969da;
+    --success-color: #1a7f37;
+    --danger-color: #cf222e;
+    --warning-color: #bf8700;
+    --info-color: #0550ae;
+    --light-color: #f6f8fa;
+    --dark-color: #24292f;
+    --border-color: #30363d;
+    --text-muted: #8b949e;
+    
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+    --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow-lg: 0 10px 15px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.05);
+    
+    --border-radius: 0.375rem;
+    --border-radius-lg: 0.5rem;
+}
+
+/* Global Styles */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+    color: var(--light-color);
+    background-color: var(--dark-color);
+}
+
+/* Card Enhancements */
+.card {
+    border: 1px solid var(--border-color);
+    background-color: rgba(255, 255, 255, 0.05);
+    box-shadow: var(--shadow);
+    transition: all 0.2s ease;
+}
+
+.card:hover {
+    box-shadow: var(--shadow-lg);
+}
+
+.card-header {
+    background-color: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* Buttons */
+.btn {
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), #4c9aff);
+    border: none;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #0860ca, #3d8aef);
+}
+
+/* Navigation */
+.navbar {
+    backdrop-filter: blur(10px);
+    background-color: rgba(36, 41, 47, 0.95) !important;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.navbar-brand {
+    font-weight: 600;
+    color: var(--primary-color) !important;
+}
+
+/* Progress Bars */
+.progress {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius);
+}
+
+.progress-bar {
+    border-radius: var(--border-radius);
+}
+
+/* Badges */
+.badge {
+    font-weight: 500;
+    border-radius: var(--border-radius);
+}
+
+/* Forms */
+.form-control, .form-select {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    color: var(--light-color);
+    border-radius: var(--border-radius);
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(9, 105, 218, 0.25);
+    color: var(--light-color);
+}
+
+.form-control::placeholder {
+    color: var(--text-muted);
+}
+
+/* Practice Mode Cards */
+.mode-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.mode-card:hover {
+    transform: translateY(-8px);
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-lg);
+}
+
+.mode-card.selected {
+    border-color: var(--primary-color);
+    background: rgba(9, 105, 218, 0.1);
+    transform: translateY(-4px);
+}
+
+/* Question Interface */
+.question-card {
+    min-height: 500px;
+    border: 1px solid var(--border-color);
+}
+
+.option-btn {
+    text-align: left;
+    white-space: normal;
+    word-wrap: break-word;
+    border: 1px solid var(--border-color);
+    background-color: rgba(255, 255, 255, 0.03);
+    transition: all 0.2s ease;
+}
+
+.option-btn:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: var(--primary-color);
+}
+
+.option-btn.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* Timer Styles */
+.timer {
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Courier New', monospace;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--info-color);
+}
+
+.timer.warning {
+    color: var(--warning-color);
+}
+
+.timer.danger {
+    color: var(--danger-color);
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+/* Session Stats */
+.session-stats {
+    position: sticky;
+    top: 80px;
+    z-index: 10;
+    background: rgba(36, 41, 47, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-color);
+}
+
+/* Question Actions */
+.question-actions {
+    position: sticky;
+    bottom: 0;
+    background: rgba(36, 41, 47, 0.98);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--border-color);
+    margin: 0 -15px;
+    z-index: 10;
+}
+
+/* Alerts */
+.alert {
+    border: none;
+    border-radius: var(--border-radius-lg);
+    border-left: 4px solid;
+}
+
+.alert-success {
+    background: rgba(26, 127, 55, 0.1);
+    border-left-color: var(--success-color);
+    color: #4ac776;
+}
+
+.alert-danger {
+    background: rgba(207, 34, 46, 0.1);
+    border-left-color: var(--danger-color);
+    color: #f97583;
+}
+
+.alert-warning {
+    background: rgba(191, 135, 0, 0.1);
+    border-left-color: var(--warning-color);
+    color: #ffab70;
+}
+
+.alert-info {
+    background: rgba(5, 80, 174, 0.1);
+    border-left-color: var(--info-color);
+    color: #79b8ff;
+}
+
+/* Loading States */
+.spinner-border {
+    border-width: 2px;
+}
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(36, 41, 47, 0.8);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+/* Stats Cards */
+.stats-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    transition: all 0.3s ease;
+}
+
+.stats-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Metric Cards */
+.metric-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--primary-color);
+}
+
+.metric-label {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+.metric-trend {
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-top: 0.25rem;
+}
+
+/* Gamification Elements */
+.streak-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    background: linear-gradient(135deg, var(--warning-color), #f39c12);
+    border-radius: var(--border-radius);
+    color: white;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.points-display {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    background: linear-gradient(135deg, var(--success-color), #27ae60);
+    border-radius: var(--border-radius);
+    color: white;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+/* Toast Notifications */
+.toast {
+    border: 1px solid var(--border-color);
+    backdrop-filter: blur(10px);
+}
+
+/* PWA Install Banner */
+#pwa-install-banner {
+    position: sticky;
+    top: 0;
+    z-index: 1050;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .mode-card:hover {
+        transform: translateY(-4px);
+    }
+    
+    .question-actions {
+        padding: 0.75rem 0;
+    }
+    
+    .session-stats {
+        position: static;
+        margin-bottom: 1rem;
+    }
+    
+    .metric-value {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .container {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+    
+    .card {
+        margin-left: -0.25rem;
+        margin-right: -0.25rem;
+    }
+    
+    .question-actions .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+
+/* Dark Theme Enhancements */
+[data-bs-theme="dark"] {
+    --bs-body-bg: #0d1117;
+    --bs-body-color: #f0f6fc;
+    --bs-border-color: #30363d;
+}
+
+/* Animation Utilities */
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.scale-in {
+    animation: scaleIn 0.2s ease-out;
+}
+
+@keyframes scaleIn {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+/* Utility Classes */
+.text-gradient {
+    background: linear-gradient(135deg, var(--primary-color), #4c9aff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.glass-effect {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.hover-lift {
+    transition: transform 0.2s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-2px);
+}
+
+/* Performance optimizations */
+* {
+    box-sizing: border-box;
+}
+
+.gpu-accelerated {
+    will-change: transform;
+    transform: translateZ(0);
+}

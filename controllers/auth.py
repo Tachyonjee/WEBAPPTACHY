@@ -48,20 +48,18 @@ def request_otp():
         
         if not user:
             # Create new student user
-            user = User(
-                name=f"Student {identifier.split('@')[0] if '@' in identifier else identifier[-4:]}",
-                email=identifier if '@' in identifier else '',
-                phone=identifier if '@' not in identifier else None,
-                role='student'
-            )
+            user = User()
+            user.name = f"Student {identifier.split('@')[0] if '@' in identifier else identifier[-4:]}"
+            user.email = identifier if '@' in identifier else ''
+            user.phone = identifier if '@' not in identifier else None
+            user.role = 'student'
             db.session.add(user)
             db.session.flush()  # Get the user ID
             
             # Create student profile
-            student = Student(
-                user_id=user.id,
-                goal_exam='JEE'  # Default exam
-            )
+            student = Student()
+            student.user_id = user.id
+            student.goal_exam = 'JEE'  # Default exam
             db.session.add(student)
             db.session.commit()
         

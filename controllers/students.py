@@ -59,11 +59,10 @@ def start_practice_session():
             db.session.commit()
         
         # Create new session
-        session = PracticeSession(
-            student_id=student.id,
-            mode=mode,
-            device_type=device_type
-        )
+        session = PracticeSession()
+        session.student_id = student.id
+        session.mode = mode
+        session.device_type = device_type
         
         session.set_subjects(subjects)
         session.set_chapters(chapters)
@@ -273,24 +272,23 @@ def submit_attempt():
         is_correct = chosen_answer.strip().upper() == question.correct_answer.strip().upper()
         
         # Create attempt
-        attempt = Attempt(
-            student_id=student.id,
-            question_id=question_id,
-            session_id=session_id,
-            chosen_answer=chosen_answer,
-            is_correct=is_correct,
-            time_taken=time_taken,
-            attempt_no=existing_attempts + 1,
-            seconds_elapsed=time_taken
-        )
+        attempt = Attempt()
+        attempt.student_id = student.id
+        attempt.question_id = question_id
+        attempt.session_id = session_id
+        attempt.chosen_answer = chosen_answer
+        attempt.is_correct = is_correct
+        attempt.time_taken = time_taken
+        attempt.attempt_no = existing_attempts + 1
+        attempt.seconds_elapsed = time_taken
         
         db.session.add(attempt)
         
         # Update gamification
-        self._update_gamification(student.id, is_correct, existing_attempts == 0, time_taken)
+        _update_gamification(student.id, is_correct, existing_attempts == 0, time_taken)
         
         # Update performance summary
-        self._update_performance_summary(student.id, question.subject, is_correct, time_taken)
+        _update_performance_summary(student.id, question.subject, is_correct, time_taken)
         
         db.session.commit()
         
@@ -356,7 +354,7 @@ def get_bookmarks():
             Question, Bookmark.question_id == Question.id
         ).filter(
             Bookmark.student_id == student.id,
-            Question.is_active == True
+            Question.is_active.is_(True)
         )
         
         if subject:
@@ -366,10 +364,23 @@ def get_bookmarks():
         if topic:
             query = query.filter(Question.topic == topic)
         
-        # Paginate
-        bookmarks = query.order_by(desc(Bookmark.created_at)).paginate(
-            page=page, per_page=per_page, error_out=False
-        )
+        # Paginate - note: SQLAlchemy 2.x paginate might not work on joined queries
+        from sqlalchemy import desc as desc_func
+        total_count = query.count()
+        bookmarks_raw = query.order_by(desc_func(Bookmark.created_at)).offset((page-1)*per_page).limit(per_page).all()
+        
+        # Create a mock pagination object
+        class PaginationResult:
+            def __init__(self, items, page, per_page, total):
+                self.items = items
+                self.page = page
+                self.per_page = per_page
+                self.total = total
+                self.pages = (total + per_page - 1) // per_page
+                self.has_next = page < self.pages
+                self.has_prev = page > 1
+        
+        bookmarks = PaginationResult(bookmarks_raw, page, per_page, total_count)
         
         # Format response
         bookmark_list = []
@@ -444,10 +455,9 @@ def add_bookmark():
             }), 400
         
         # Create bookmark
-        bookmark = Bookmark(
-            student_id=student.id,
-            question_id=question_id
-        )
+        bookmark = Bookmark()
+        bookmark.student_id = student.id
+        bookmark.question_id = question_id
         
         db.session.add(bookmark)
         db.session.commit()
@@ -594,11 +604,10 @@ def create_doubt(student_id):
             }), 400
         
         # Create doubt
-        doubt = Doubt(
-            student_id=student_id,
-            question_id=question_id,
-            message=message
-        )
+        doubt = Doubt()
+        doubt.student_id = student_id
+        doubt.question_id = question_id
+        doubt.message = message
         
         db.session.add(doubt)
         db.session.commit()
@@ -719,7 +728,8 @@ def _update_gamification(student_id, is_correct, is_first_attempt, time_taken):
         # Update streak
         streak = Streak.query.filter_by(student_id=student_id).first()
         if not streak:
-            streak = Streak(student_id=student_id)
+            streak = Streak()
+            streak.student_id = student_id
             db.session.add(streak)
         
         streak.update_streak()
@@ -727,7 +737,8 @@ def _update_gamification(student_id, is_correct, is_first_attempt, time_taken):
         # Update points
         points = Points.query.filter_by(student_id=student_id).first()
         if not points:
-            points = Points(student_id=student_id)
+            points = Points()
+            points.student_id = student_id
             db.session.add(points)
         
         # Award points
@@ -755,10 +766,9 @@ def _update_performance_summary(student_id, subject, is_correct, time_taken):
         ).first()
         
         if not summary:
-            summary = PerformanceSummary(
-                student_id=student_id,
-                subject=subject
-            )
+            summary = PerformanceSummary()
+            summary.student_id = student_id
+            summary.subject = subject
             db.session.add(summary)
         
         summary.update_performance(is_correct, time_taken)
