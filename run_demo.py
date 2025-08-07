@@ -67,7 +67,8 @@ def progress():
                          student=DEMO_DATA, 
                          weekly_data={}, 
                          subject_performance={},
-                         recent_sessions=[])
+                         recent_sessions=[],
+                         total_accuracy=75.5)
 
 @app.route('/review')
 def review():
@@ -145,6 +146,37 @@ def switch_role(role):
         return redirect('/operator')
     else:
         return redirect('/')
+
+# === API ENDPOINTS FOR FRONTEND ===
+@app.route('/api/students/profile')
+def api_student_profile():
+    return jsonify(DEMO_DATA)
+
+@app.route('/api/students/doubts')
+def api_student_doubts():
+    return jsonify({"doubts": [], "total": 0})
+
+@app.route('/api/practice/start', methods=['POST'])
+def api_start_practice():
+    data = request.get_json() or {}
+    return jsonify({
+        "session_id": 123, 
+        "status": "started",
+        "total_questions": 10,
+        "subject": data.get('subject', 'Mathematics')
+    })
+
+@app.route('/api/practice/question/<int:session_id>')
+def api_get_question(session_id):
+    return jsonify({
+        "id": 1,
+        "question_text": "What is the derivative of x²?",
+        "options": ["2x", "x", "2", "x²"],
+        "correct_answer": "2x",
+        "subject": "Mathematics",
+        "topic": "Calculus",
+        "difficulty": "Easy"
+    })
 
 if __name__ == '__main__':
     print("Starting Coaching App Demo on port 3000...")
