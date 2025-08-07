@@ -45,6 +45,26 @@ def home():
 def practice():
     return render_template('student/practice.html', subjects=["Mathematics", "Physics", "Chemistry", "Biology"])
 
+@app.route('/progress')
+def progress():
+    return render_template('student/progress.html', 
+                         student=DEMO_DATA, 
+                         weekly_data={}, 
+                         subject_performance={},
+                         recent_sessions=[])
+
+@app.route('/review')
+def review():
+    return render_template('student/review.html', subjects=["Mathematics", "Physics", "Chemistry"])
+
+@app.route('/submit_attempt', methods=['POST'])
+def submit_attempt():
+    return jsonify({'status': 'success', 'message': 'Answer submitted'})
+
+@app.route('/practice_question/<int:session_id>')
+def practice_question(session_id):
+    return render_template('student/practice_question.html', session_id=session_id)
+
 @app.route('/auth/login')
 def login():
     return render_template('auth/login.html')
@@ -55,4 +75,4 @@ def api_test():
 
 if __name__ == '__main__':
     print("Starting Coaching App Demo on port 5000...")
-    app.run(host='0.0.0.0', port=8080, debug=False)
+    app.run(host='0.0.0.0', port=5000, debug=False)

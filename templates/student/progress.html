@@ -155,7 +155,7 @@
                             <span class="badge weakness-badge bg-warning text-dark">{{ subject_stat.subject }}</span>
                             <div class="small text-muted">{{ subject_stat.accuracy }}% accuracy</div>
                         </div>
-                        <a href="{{ url_for('students.practice') }}?subject={{ subject_stat.subject }}" 
+                        <a href="{{ url_for('practice') }}?subject={{ subject_stat.subject }}" 
                            class="btn btn-sm btn-outline-primary">
                             Practice
                         </a>
@@ -244,11 +244,11 @@
                 
                 <!-- Action Buttons -->
                 <div class="mt-3 text-center">
-                    <a href="{{ url_for('students.practice') }}?subject={{ subject_stat.subject }}" 
+                    <a href="{{ url_for('practice') }}?subject={{ subject_stat.subject }}" 
                        class="btn btn-primary me-2">
                         <i class="fas fa-brain me-1"></i>Practice {{ subject_stat.subject }}
                     </a>
-                    <a href="{{ url_for('students.review') }}?subject={{ subject_stat.subject }}" 
+                    <a href="{{ url_for('review') }}?subject={{ subject_stat.subject }}" 
                        class="btn btn-outline-info me-2">
                         <i class="fas fa-history me-1"></i>Review Attempts
                     </a>
@@ -371,7 +371,7 @@
                 </div>
                 
                 <div class="text-center mt-3">
-                    <a href="{{ url_for('students.practice') }}" class="btn btn-primary">
+                    <a href="{{ url_for('practice') }}" class="btn btn-primary">
                         <i class="fas fa-play me-1"></i>Continue Learning
                     </a>
                 </div>

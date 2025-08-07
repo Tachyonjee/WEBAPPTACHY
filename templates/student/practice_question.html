@@ -42,7 +42,7 @@
                     </div>
                     
                     <!-- Answer Options -->
-                    <form id="answerForm" method="post" action="{{ url_for('students.submit_attempt') }}">
+                    <form id="answerForm" method="post" action="{{ url_for('submit_attempt') }}">
                         <input type="hidden" name="session_id" value="{{ session.id }}">
                         <input type="hidden" name="question_id" value="{{ question.id }}">
                         <input type="hidden" name="time_taken" id="timeInput">
@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', function() {
         formData.append('attempt_number', currentAttempt);
         
         // Submit via fetch
-        fetch('{{ url_for("students.submit_attempt") }}', {
+        fetch('{{ url_for("submit_attempt") }}', {
             method: 'POST',
             body: formData
         })
@@ -326,7 +326,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     window.nextQuestion = function() {
         // Redirect to next question
-        window.location.href = '{{ url_for("students.practice_question", session_id=session.id) }}';
+        window.location.href = '{{ url_for("practice_question", session_id=session.id) }}';
     };
 });
 </script>
