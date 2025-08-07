@@ -7,3 +7,39 @@ packages = ["cargo", "glibcLocales", "libiconv", "openssl", "postgresql", "rustc
 [deployment]
 deploymentTarget = "autoscale"
 run = ["gunicorn", "--bind", "0.0.0.0:5000", "main:app"]
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "demo-server"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "demo-app"
+
+[[workflows.workflow]]
+name = "demo-server"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd / && python run_demo.py"
+
+[[workflows.workflow]]
+name = "demo-app"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python run_demo.py"
+
+[[ports]]
+localPort = 5000
+externalPort = 80
