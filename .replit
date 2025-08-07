@@ -24,6 +24,18 @@ args = "demo-server"
 task = "workflow.run"
 args = "demo-app"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "coaching-demo"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "coaching-app-demo"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "final-demo"
+
 [[workflows.workflow]]
 name = "demo-server"
 author = "agent"
@@ -40,6 +52,34 @@ author = "agent"
 task = "shell.exec"
 args = "python run_demo.py"
 
+[[workflows.workflow]]
+name = "coaching-demo"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python run_demo.py"
+
+[[workflows.workflow]]
+name = "coaching-app-demo"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python run_demo.py"
+
+[[workflows.workflow]]
+name = "final-demo"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python run_demo.py"
+
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[[ports]]
+localPort = 8080
+externalPort = 8080

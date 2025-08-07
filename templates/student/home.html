@@ -26,7 +26,7 @@
                         {% endif %}
                     </div>
                     <div class="col-md-4 text-md-end">
-                        <a href="{{ url_for('students.practice') }}" class="btn btn-primary btn-lg">
+                        <a href="{{ url_for('practice') }}" class="btn btn-primary btn-lg">
                             <i class="fas fa-brain me-2"></i>Start Practice
                         </a>
                     </div>
@@ -97,25 +97,25 @@
             <div class="card-body">
                 <div class="row g-3">
                     <div class="col-6">
-                        <a href="{{ url_for('students.practice') }}" class="btn btn-outline-primary w-100">
+                        <a href="{{ url_for('practice') }}" class="btn btn-outline-primary w-100">
                             <i class="fas fa-brain d-block mb-2"></i>
                             Adaptive Practice
                         </a>
                     </div>
                     <div class="col-6">
-                        <a href="{{ url_for('students.lectures') }}" class="btn btn-outline-info w-100">
+                        <a href="#" class="btn btn-outline-info w-100">
                             <i class="fas fa-video d-block mb-2"></i>
                             Watch Lectures
                         </a>
                     </div>
                     <div class="col-6">
-                        <a href="{{ url_for('students.review') }}" class="btn btn-outline-success w-100">
+                        <a href="#" class="btn btn-outline-success w-100">
                             <i class="fas fa-history d-block mb-2"></i>
                             Review Attempts
                         </a>
                     </div>
                     <div class="col-6">
-                        <a href="{{ url_for('students.doubts') }}" class="btn btn-outline-warning w-100 position-relative">
+                        <a href="#" class="btn btn-outline-warning w-100 position-relative">
                             <i class="fas fa-question-circle d-block mb-2"></i>
                             Ask Doubts
                             {% if pending_doubts > 0 %}
@@ -149,7 +149,7 @@
                         </span>
                     </div>
                     <div class="progress" style="height: 8px;">
-                        <div class="progress-bar bg-warning" style="width: {{ min(100, (streak.current_streak / 30) * 100) }}%"></div>
+                        <div class="progress-bar bg-warning" style="width: {{ (streak.current_streak / 30 * 100) if streak.current_streak < 30 else 100 }}%"></div>
                     </div>
                     <small class="text-muted">Best: {{ streak.best_streak }} days</small>
                 </div>
@@ -163,7 +163,7 @@
                         <span class="badge bg-info">{{ points.points_today }}</span>
                     </div>
                     <div class="progress" style="height: 8px;">
-                        <div class="progress-bar bg-info" style="width: {{ min(100, (points.points_today / 50) * 100) }}%"></div>
+                        <div class="progress-bar bg-info" style="width: {{ (points.points_today / 50 * 100) if points.points_today < 50 else 100 }}%"></div>
                     </div>
                     <small class="text-muted">Daily goal: 50 points</small>
                 </div>

@@ -28,8 +28,13 @@ def setup():
 
 @app.route('/')
 def home():
+    # Add goal_exam and batch to demo data for template
+    student_data = DEMO_DATA.copy()
+    student_data['goal_exam'] = 'JEE'
+    student_data['batch'] = 'Demo Batch 2024'
+    
     return render_template('student/home.html',
-                         student=DEMO_DATA, streak=DEMO_DATA['streak'],
+                         student=student_data, streak=DEMO_DATA['streak'],
                          points=DEMO_DATA['points'],
                          today_attempts=DEMO_DATA['today_stats']['attempts'],
                          today_correct=DEMO_DATA['today_stats']['correct'],
@@ -50,4 +55,4 @@ def api_test():
 
 if __name__ == '__main__':
     print("Starting Coaching App Demo on port 5000...")
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    app.run(host='0.0.0.0', port=8080, debug=False)
