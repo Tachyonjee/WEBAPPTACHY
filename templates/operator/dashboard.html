@@ -1,0 +1,193 @@
+{% extends "shared/layout.html" %}
+
+{% block title %}Operator Dashboard - Coaching App{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">
+                <i class="bi bi-speedometer2 me-2"></i>
+                Content Management Dashboard
+            </h2>
+        </div>
+    </div>
+    
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <div class="display-6 text-primary mb-2">
+                        <i class="bi bi-question-square"></i>
+                    </div>
+                    <h4>{{ total_questions }}</h4>
+                    <small class="text-muted">Total Questions</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <div class="display-6 text-info mb-2">
+                        <i class="bi bi-atom"></i>
+                    </div>
+                    <h4>{{ subjects_stats.Physics or 0 }}</h4>
+                    <small class="text-muted">Physics</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <div class="display-6 text-success mb-2">
+                        <i class="bi bi-droplet"></i>
+                    </div>
+                    <h4>{{ subjects_stats.Chemistry or 0 }}</h4>
+                    <small class="text-muted">Chemistry</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <div class="display-6 text-warning mb-2">
+                        <i class="bi bi-heart-pulse"></i>
+                    </div>
+                    <h4>{{ subjects_stats.Biology or 0 }}</h4>
+                    <small class="text-muted">Biology</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <div class="display-6 text-danger mb-2">
+                        <i class="bi bi-calculator"></i>
+                    </div>
+                    <h4>{{ subjects_stats.Mathematics or 0 }}</h4>
+                    <small class="text-muted">Mathematics</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h4 class="mb-3">Quick Actions</h4>
+        </div>
+        <div class="col-md-4 col-6 mb-3">
+            <a href="{{ url_for('questions.add_question') }}" class="card text-decoration-none h-100">
+                <div class="card-body text-center">
+                    <div class="display-6 text-primary mb-3">
+                        <i class="bi bi-plus-circle"></i>
+                    </div>
+                    <h6 class="card-title">Add Question</h6>
+                    <p class="card-text text-muted small">Create new practice question</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4 col-6 mb-3">
+            <a href="{{ url_for('questions.bulk_upload') }}" class="card text-decoration-none h-100">
+                <div class="card-body text-center">
+                    <div class="display-6 text-success mb-3">
+                        <i class="bi bi-file-earmark-arrow-up"></i>
+                    </div>
+                    <h6 class="card-title">Bulk Upload</h6>
+                    <p class="card-text text-muted small">Upload questions from CSV/Excel</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4 col-6 mb-3">
+            <a href="{{ url_for('questions.bank') }}" class="card text-decoration-none h-100">
+                <div class="card-body text-center">
+                    <div class="display-6 text-info mb-3">
+                        <i class="bi bi-bank"></i>
+                    </div>
+                    <h6 class="card-title">Question Bank</h6>
+                    <p class="card-text text-muted small">Manage existing questions</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4 col-6 mb-3">
+            <a href="{{ url_for('lectures.add_lecture') }}" class="card text-decoration-none h-100">
+                <div class="card-body text-center">
+                    <div class="display-6 text-warning mb-3">
+                        <i class="bi bi-play-circle"></i>
+                    </div>
+                    <h6 class="card-title">Add Lecture</h6>
+                    <p class="card-text text-muted small">Upload new video lecture</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4 col-6 mb-3">
+            <a href="{{ url_for('lectures.list_lectures') }}" class="card text-decoration-none h-100">
+                <div class="card-body text-center">
+                    <div class="display-6 text-secondary mb-3">
+                        <i class="bi bi-collection-play"></i>
+                    </div>
+                    <h6 class="card-title">Manage Lectures</h6>
+                    <p class="card-text text-muted small">View and edit lectures</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4 col-6 mb-3">
+            <a href="{{ url_for('questions.qc') }}" class="card text-decoration-none h-100">
+                <div class="card-body text-center">
+                    <div class="display-6 text-danger mb-3">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <h6 class="card-title">Quality Control</h6>
+                    <p class="card-text text-muted small">Review flagged questions</p>
+                </div>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Recent Activity -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Content Management Tasks</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Review New Questions</h6>
+                                <small class="text-muted">Check recently added questions for quality</small>
+                            </div>
+                            <a href="{{ url_for('questions.qc') }}" class="btn btn-sm btn-outline-primary">
+                                Review
+                            </a>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Update Question Difficulty</h6>
+                                <small class="text-muted">Adjust difficulty based on student performance</small>
+                            </div>
+                            <a href="{{ url_for('questions.bank') }}" class="btn btn-sm btn-outline-primary">
+                                Manage
+                            </a>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Add Practice Recommendations</h6>
+                                <small class="text-muted">Create targeted practice sets for lectures</small>
+                            </div>
+                            <a href="{{ url_for('lectures.list_lectures') }}" class="btn btn-sm btn-outline-primary">
+                                Lectures
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

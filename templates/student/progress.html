@@ -1,0 +1,581 @@
+{% extends "shared/layout.html" %}
+
+{% block title %}Progress - Coaching App{% endblock %}
+
+{% block extra_head %}
+<style>
+.progress-card {
+    transition: transform 0.2s ease;
+}
+
+.progress-card:hover {
+    transform: translateY(-2px);
+}
+
+.subject-chart-container {
+    position: relative;
+    height: 300px;
+}
+
+.topic-heatmap {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.5rem;
+}
+
+.topic-cell {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.topic-cell:hover {
+    transform: scale(1.05);
+}
+
+.accuracy-excellent { background-color: #22c55e; color: white; }
+.accuracy-good { background-color: #84cc16; color: white; }
+.accuracy-average { background-color: #eab308; color: black; }
+.accuracy-poor { background-color: #ef4444; color: white; }
+.accuracy-none { background-color: #6b7280; color: white; }
+
+.weakness-badge {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <h3><i class="fas fa-chart-line me-2"></i>Your Learning Progress</h3>
+        <p class="text-muted">Track your performance and identify areas for improvement</p>
+    </div>
+</div>
+
+<!-- Overview Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 col-6 mb-3">
+        <div class="card progress-card text-center">
+            <div class="card-body">
+                <div class="text-primary mb-2">
+                    <i class="fas fa-bullseye fa-2x"></i>
+                </div>
+                <h4 class="card-title">
+                    {% set total_accuracy = (subject_stats | map(attribute='accuracy') | sum / subject_stats | length) if subject_stats | length > 0 else 0 %}
+                    {{ total_accuracy | round(1) }}%
+                </h4>
+                <p class="card-text text-muted">Overall Accuracy</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-6 mb-3">
+        <div class="card progress-card text-center">
+            <div class="card-body">
+                <div class="text-success mb-2">
+                    <i class="fas fa-check-circle fa-2x"></i>
+                </div>
+                <h4 class="card-title">
+                    {% set total_attempts = subject_stats | map(attribute='attempts') | sum %}
+                    {{ total_attempts }}
+                </h4>
+                <p class="card-text text-muted">Total Questions</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-6 mb-3">
+        <div class="card progress-card text-center">
+            <div class="card-body">
+                <div class="text-info mb-2">
+                    <i class="fas fa-fire fa-2x"></i>
+                </div>
+                <h4 class="card-title" id="currentStreak">{{ student.streak.current_streak if student.streak else 0 }}</h4>
+                <p class="card-text text-muted">Day Streak</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-6 mb-3">
+        <div class="card progress-card text-center">
+            <div class="card-body">
+                <div class="text-warning mb-2">
+                    <i class="fas fa-star fa-2x"></i>
+                </div>
+                <h4 class="card-title" id="totalPoints">{{ student.points.points_total if student.points else 0 }}</h4>
+                <p class="card-text text-muted">Total Points</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Subject-wise Performance -->
+<div class="row mb-4">
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>Subject-wise Performance
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="subject-chart-container">
+                    <canvas id="subjectPerformanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Areas to Focus
+                </h5>
+            </div>
+            <div class="card-body">
+                {% set weak_subjects = subject_stats | selectattr('accuracy', 'lt', 70) | list %}
+                {% if weak_subjects %}
+                    {% for subject_stat in weak_subjects %}
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <span class="badge weakness-badge bg-warning text-dark">{{ subject_stat.subject }}</span>
+                            <div class="small text-muted">{{ subject_stat.accuracy }}% accuracy</div>
+                        </div>
+                        <a href="{{ url_for('students.practice') }}?subject={{ subject_stat.subject }}" 
+                           class="btn btn-sm btn-outline-primary">
+                            Practice
+                        </a>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center text-success">
+                        <i class="fas fa-trophy fa-2x mb-2"></i>
+                        <p class="mb-0">Great job! All subjects above 70%</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Subject Analysis -->
+{% for subject_stat in subject_stats %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-atom me-2"></i>{{ subject_stat.subject }} - Detailed Analysis
+                </h5>
+                <div>
+                    <span class="badge {% if subject_stat.accuracy >= 80 %}bg-success{% elif subject_stat.accuracy >= 60 %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                        {{ subject_stat.accuracy }}% Accuracy
+                    </span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="text-center">
+                            <canvas id="accuracyChart{{ loop.index }}" width="150" height="150"></canvas>
+                            <h6 class="mt-2">Accuracy Breakdown</h6>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-8">
+                        <h6 class="mb-3">Performance Metrics</h6>
+                        <div class="row">
+                            <div class="col-6 col-md-3 mb-3">
+                                <div class="text-center">
+                                    <h5 class="text-primary">{{ subject_stat.attempts }}</h5>
+                                    <small class="text-muted">Questions Attempted</small>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3 mb-3">
+                                <div class="text-center">
+                                    <h5 class="text-success">{{ subject_stat.correct }}</h5>
+                                    <small class="text-muted">Correct Answers</small>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3 mb-3">
+                                <div class="text-center">
+                                    <h5 class="text-info">{{ subject_stat.avg_time | round(1) }}s</h5>
+                                    <small class="text-muted">Avg Time</small>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3 mb-3">
+                                <div class="text-center">
+                                    {% set improvement = subject_stat.accuracy - 50 %}
+                                    <h5 class="{% if improvement > 0 %}text-success{% else %}text-danger{% endif %}">
+                                        {% if improvement > 0 %}+{% endif %}{{ improvement | round(1) }}%
+                                    </h5>
+                                    <small class="text-muted">vs Average</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Progress Bar -->
+                        <div class="mt-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <small class="text-muted">Progress to 100%</small>
+                                <small class="text-muted">{{ subject_stat.accuracy }}%</small>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar {% if subject_stat.accuracy >= 80 %}bg-success{% elif subject_stat.accuracy >= 60 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                     style="width: {{ subject_stat.accuracy }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="mt-3 text-center">
+                    <a href="{{ url_for('students.practice') }}?subject={{ subject_stat.subject }}" 
+                       class="btn btn-primary me-2">
+                        <i class="fas fa-brain me-1"></i>Practice {{ subject_stat.subject }}
+                    </a>
+                    <a href="{{ url_for('students.review') }}?subject={{ subject_stat.subject }}" 
+                       class="btn btn-outline-info me-2">
+                        <i class="fas fa-history me-1"></i>Review Attempts
+                    </a>
+                    <button type="button" class="btn btn-outline-success" onclick="getSubjectRecommendations('{{ subject_stat.subject }}')">
+                        <i class="fas fa-lightbulb me-1"></i>Get Tips
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Weekly Progress Trend -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-calendar-week me-2"></i>Weekly Progress Trend
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="weeklyTrendChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Topic Heatmap -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-th me-2"></i>Topic Performance Heatmap
+                </h5>
+                <p class="card-text small text-muted mb-0">Color-coded performance across different topics</p>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <small class="text-muted me-3">
+                        <span class="badge accuracy-excellent me-1"></span>90%+ Excellent
+                    </small>
+                    <small class="text-muted me-3">
+                        <span class="badge accuracy-good me-1"></span>70-89% Good
+                    </small>
+                    <small class="text-muted me-3">
+                        <span class="badge accuracy-average me-1"></span>50-69% Average
+                    </small>
+                    <small class="text-muted me-3">
+                        <span class="badge accuracy-poor me-1"></span><50% Poor
+                    </small>
+                    <small class="text-muted">
+                        <span class="badge accuracy-none me-1"></span>Not Attempted
+                    </small>
+                </div>
+                <div class="topic-heatmap" id="topicHeatmap">
+                    <!-- Topic cells will be generated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Study Recommendations -->
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-trophy me-2"></i>Achievements
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if student.badges %}
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for badge in student.badges %}
+                        <span class="badge bg-success fs-6" title="{{ badge.badge_description }}">
+                            <i class="fas fa-medal me-1"></i>{{ badge.badge_name }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted">
+                        <i class="fas fa-medal fa-2x mb-2 opacity-50"></i>
+                        <p class="mb-0">Keep practicing to earn badges!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-target me-2"></i>Study Goals
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <small>Daily Practice Goal</small>
+                        <small id="dailyProgress">0/20 questions</small>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-primary" id="dailyProgressBar" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <small>Weekly Accuracy Goal</small>
+                        <small>{{ total_accuracy | round(1) }}/80%</small>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-success" style="width: {{ (total_accuracy / 80 * 100) | round(1) }}%"></div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('students.practice') }}" class="btn btn-primary">
+                        <i class="fas fa-play me-1"></i>Continue Learning
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Subject performance data
+const subjectData = [
+    {% for subject_stat in subject_stats %}
+    {
+        subject: '{{ subject_stat.subject }}',
+        accuracy: {{ subject_stat.accuracy }},
+        attempts: {{ subject_stat.attempts }},
+        correct: {{ subject_stat.correct }}
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+];
+
+// Sample topic data (would come from backend)
+const topicData = [
+    // Physics topics
+    {subject: 'Physics', topic: 'Mechanics', accuracy: 85},
+    {subject: 'Physics', topic: 'Thermodynamics', accuracy: 72},
+    {subject: 'Physics', topic: 'Optics', accuracy: 68},
+    {subject: 'Physics', topic: 'Electricity', accuracy: 90},
+    {subject: 'Physics', topic: 'Magnetism', accuracy: 45},
+    // Chemistry topics
+    {subject: 'Chemistry', topic: 'Organic', accuracy: 78},
+    {subject: 'Chemistry', topic: 'Inorganic', accuracy: 82},
+    {subject: 'Chemistry', topic: 'Physical', accuracy: 65},
+    // Mathematics topics
+    {subject: 'Mathematics', topic: 'Algebra', accuracy: 88},
+    {subject: 'Mathematics', topic: 'Calculus', accuracy: 92},
+    {subject: 'Mathematics', topic: 'Geometry', accuracy: 75}
+];
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializeCharts();
+    generateTopicHeatmap();
+    updateDailyProgress();
+});
+
+function initializeCharts() {
+    // Subject Performance Chart
+    const ctx1 = document.getElementById('subjectPerformanceChart');
+    if (ctx1) {
+        new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: subjectData.map(s => s.subject),
+                datasets: [{
+                    label: 'Accuracy (%)',
+                    data: subjectData.map(s => s.accuracy),
+                    backgroundColor: [
+                        'rgba(54, 162, 235, 0.8)',
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(255, 205, 86, 0.8)',
+                        'rgba(75, 192, 192, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgb(54, 162, 235)',
+                        'rgb(255, 99, 132)',
+                        'rgb(255, 205, 86)',
+                        'rgb(75, 192, 192)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    }
+    
+    // Individual accuracy charts for each subject
+    subjectData.forEach((subject, index) => {
+        const ctx = document.getElementById(`accuracyChart${index + 1}`);
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Correct', 'Incorrect'],
+                    datasets: [{
+                        data: [subject.correct, subject.attempts - subject.correct],
+                        backgroundColor: ['#22c55e', '#ef4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+    });
+    
+    // Weekly trend chart
+    const weeklyCtx = document.getElementById('weeklyTrendChart');
+    if (weeklyCtx) {
+        new Chart(weeklyCtx, {
+            type: 'line',
+            data: {
+                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                datasets: [{
+                    label: 'Accuracy %',
+                    data: [65, 72, 78, {{ total_accuracy | round(1) }}],
+                    borderColor: 'rgb(54, 162, 235)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+    }
+}
+
+function generateTopicHeatmap() {
+    const heatmapContainer = document.getElementById('topicHeatmap');
+    
+    topicData.forEach(topic => {
+        const cell = document.createElement('div');
+        cell.className = 'topic-cell ' + getAccuracyClass(topic.accuracy);
+        cell.innerHTML = `
+            <div>
+                <div class="fw-bold">${topic.topic}</div>
+                <small>${topic.accuracy}%</small>
+            </div>
+        `;
+        cell.onclick = () => practiceeTopic(topic.subject, topic.topic);
+        heatmapContainer.appendChild(cell);
+    });
+}
+
+function getAccuracyClass(accuracy) {
+    if (accuracy >= 90) return 'accuracy-excellent';
+    if (accuracy >= 70) return 'accuracy-good';
+    if (accuracy >= 50) return 'accuracy-average';
+    if (accuracy > 0) return 'accuracy-poor';
+    return 'accuracy-none';
+}
+
+function practiceTopic(subject, topic) {
+    window.location.href = `/student/practice?subject=${subject}&topic=${topic}`;
+}
+
+function updateDailyProgress() {
+    // This would typically fetch real-time data
+    const dailyAttempts = 12; // Mock data
+    const dailyGoal = 20;
+    const progress = Math.min(100, (dailyAttempts / dailyGoal) * 100);
+    
+    document.getElementById('dailyProgress').textContent = `${dailyAttempts}/${dailyGoal} questions`;
+    document.getElementById('dailyProgressBar').style.width = `${progress}%`;
+}
+
+function getSubjectRecommendations(subject) {
+    showToast(`Getting personalized recommendations for ${subject}...`, 'info');
+    
+    // Mock recommendations - in real app, this would call API
+    setTimeout(() => {
+        const recommendations = {
+            'Physics': 'Focus on Magnetism (45% accuracy). Practice 10 questions daily on electromagnetic induction.',
+            'Chemistry': 'Strengthen Physical Chemistry concepts. Review thermodynamics and kinetics.',
+            'Mathematics': 'Excellent progress! Continue with advanced calculus problems.'
+        };
+        
+        showToast(recommendations[subject] || 'Keep practicing to improve!', 'success', 8000);
+    }, 1000);
+}
+</script>
+{% endblock %}

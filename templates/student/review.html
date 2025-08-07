@@ -1,0 +1,566 @@
+{% extends "shared/layout.html" %}
+
+{% block title %}Review - Coaching App{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <h3><i class="fas fa-history me-2"></i>Review Your Attempts</h3>
+        <p class="text-muted">Analyze your previous attempts and learn from your mistakes</p>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Filters -->
+    <div class="col-md-3 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-filter me-2"></i>Filters
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Subject</label>
+                    <select class="form-select" id="subjectFilter">
+                        <option value="">All Subjects</option>
+                        <option value="Physics">Physics</option>
+                        <option value="Chemistry">Chemistry</option>
+                        <option value="Mathematics">Mathematics</option>
+                        {% if student.goal_exam == 'NEET' %}
+                        <option value="Biology">Biology</option>
+                        {% endif %}
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Result</label>
+                    <select class="form-select" id="resultFilter">
+                        <option value="">All Attempts</option>
+                        <option value="correct">Correct Only</option>
+                        <option value="incorrect">Incorrect Only</option>
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Difficulty</label>
+                    <select class="form-select" id="difficultyFilter">
+                        <option value="">All Levels</option>
+                        <option value="1">Level 1 (Easy)</option>
+                        <option value="2">Level 2</option>
+                        <option value="3">Level 3 (Medium)</option>
+                        <option value="4">Level 4</option>
+                        <option value="5">Level 5 (Hard)</option>
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Time Period</label>
+                    <select class="form-select" id="periodFilter">
+                        <option value="7">Last 7 days</option>
+                        <option value="30" selected>Last 30 days</option>
+                        <option value="90">Last 3 months</option>
+                        <option value="">All time</option>
+                    </select>
+                </div>
+                
+                <button type="button" class="btn btn-primary w-100" onclick="applyFilters()">
+                    <i class="fas fa-search me-2"></i>Apply Filters
+                </button>
+                
+                <button type="button" class="btn btn-outline-secondary w-100 mt-2" onclick="clearFilters()">
+                    <i class="fas fa-times me-2"></i>Clear Filters
+                </button>
+            </div>
+        </div>
+        
+        <!-- Quick Stats -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>Quick Stats
+                </h6>
+            </div>
+            <div class="card-body text-center" id="quickStats">
+                <div class="row">
+                    <div class="col-6">
+                        <h5 class="text-primary mb-1">{{ recent_attempts|length }}</h5>
+                        <small class="text-muted">Total</small>
+                    </div>
+                    <div class="col-6">
+                        <h5 class="text-success mb-1">
+                            {{ recent_attempts|selectattr('0.is_correct')|list|length }}
+                        </h5>
+                        <small class="text-muted">Correct</small>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <small class="text-info">
+                        Accuracy: {{ ((recent_attempts|selectattr('0.is_correct')|list|length / recent_attempts|length) * 100) | round(1) if recent_attempts|length > 0 else 0 }}%
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Attempts List -->
+    <div class="col-md-9">
+        <div id="attemptsContainer">
+            {% if recent_attempts %}
+                {% for attempt, question in recent_attempts %}
+                <div class="card mb-3 attempt-card" 
+                     data-subject="{{ question.subject }}" 
+                     data-result="{{ 'correct' if attempt.is_correct else 'incorrect' }}"
+                     data-difficulty="{{ question.difficulty }}"
+                     data-timestamp="{{ attempt.timestamp.isoformat() }}">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <!-- Question Info -->
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="badge bg-primary me-2">{{ question.subject }}</span>
+                                    <span class="badge bg-secondary me-2">{{ question.topic }}</span>
+                                    <span class="badge bg-info me-2">Level {{ question.difficulty }}</span>
+                                    {% if attempt.is_correct %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check me-1"></i>Correct
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-times me-1"></i>Incorrect
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Question Text -->
+                                <p class="card-text">
+                                    {{ question.question_text[:200] }}{% if question.question_text|length > 200 %}...{% endif %}
+                                </p>
+                                
+                                <!-- Attempt Details -->
+                                <div class="row text-muted small">
+                                    <div class="col-sm-6">
+                                        <i class="fas fa-clock me-1"></i>
+                                        Time: {{ attempt.time_taken }}s
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        {{ attempt.timestamp.strftime('%d %b %Y, %I:%M %p') }}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4 text-md-end">
+                                <!-- Actions -->
+                                <div class="d-grid gap-2 d-md-block">
+                                    <button type="button" class="btn btn-outline-primary btn-sm" 
+                                            onclick="viewQuestion({{ question.id }})">
+                                        <i class="fas fa-eye me-1"></i>View
+                                    </button>
+                                    
+                                    <button type="button" class="btn btn-outline-info btn-sm" 
+                                            onclick="getSolution({{ question.id }})">
+                                        <i class="fas fa-lightbulb me-1"></i>Solution
+                                    </button>
+                                    
+                                    <button type="button" class="btn btn-outline-warning btn-sm" 
+                                            onclick="practiceAgain({{ question.id }})">
+                                        <i class="fas fa-redo me-1"></i>Retry
+                                    </button>
+                                </div>
+                                
+                                <!-- Attempt Number -->
+                                {% if attempt.attempt_no > 1 %}
+                                <div class="mt-2">
+                                    <small class="text-muted">Attempt {{ attempt.attempt_no }}</small>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Answer Details -->
+                        <div class="mt-3 p-3 bg-dark rounded">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong class="text-info">Your Answer:</strong>
+                                    <span class="ms-2">{{ attempt.chosen_answer }}</span>
+                                </div>
+                                <div class="col-md-6">
+                                    <strong class="text-success">Correct Answer:</strong>
+                                    <span class="ms-2">{{ question.correct_answer }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                <!-- Load More Button -->
+                <div class="text-center mt-4">
+                    <button type="button" class="btn btn-outline-primary" onclick="loadMoreAttempts()">
+                        <i class="fas fa-plus me-2"></i>Load More Attempts
+                    </button>
+                </div>
+            {% else %}
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-history fa-4x text-muted mb-3"></i>
+                        <h5>No Attempts Yet</h5>
+                        <p class="text-muted mb-4">Start practicing to see your attempt history here</p>
+                        <a href="{{ url_for('students.practice') }}" class="btn btn-primary">
+                            <i class="fas fa-brain me-2"></i>Start Practice
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Question Detail Modal -->
+<div class="modal fade" id="questionModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Question Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="questionModalBody">
+                <!-- Question details will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="bookmarkQuestion()">
+                    <i class="fas fa-bookmark me-2"></i>Bookmark
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Solution Modal -->
+<div class="modal fade" id="solutionModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Solution</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="solutionModalBody">
+                <!-- Solution will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let currentPage = 1;
+let currentQuestionId = null;
+
+function applyFilters() {
+    const filters = {
+        subject: document.getElementById('subjectFilter').value,
+        result: document.getElementById('resultFilter').value,
+        difficulty: document.getElementById('difficultyFilter').value,
+        period: document.getElementById('periodFilter').value
+    };
+    
+    // Filter attempts on client side for now
+    filterAttempts(filters);
+}
+
+function clearFilters() {
+    document.getElementById('subjectFilter').value = '';
+    document.getElementById('resultFilter').value = '';
+    document.getElementById('difficultyFilter').value = '';
+    document.getElementById('periodFilter').value = '30';
+    
+    // Show all attempts
+    document.querySelectorAll('.attempt-card').forEach(card => {
+        card.style.display = 'block';
+    });
+    
+    updateQuickStats();
+}
+
+function filterAttempts(filters) {
+    const cards = document.querySelectorAll('.attempt-card');
+    let visibleCount = 0;
+    let correctCount = 0;
+    
+    cards.forEach(card => {
+        let show = true;
+        
+        // Subject filter
+        if (filters.subject && card.dataset.subject !== filters.subject) {
+            show = false;
+        }
+        
+        // Result filter
+        if (filters.result && card.dataset.result !== filters.result) {
+            show = false;
+        }
+        
+        // Difficulty filter
+        if (filters.difficulty && card.dataset.difficulty !== filters.difficulty) {
+            show = false;
+        }
+        
+        // Period filter
+        if (filters.period) {
+            const cardDate = new Date(card.dataset.timestamp);
+            const cutoffDate = new Date();
+            cutoffDate.setDate(cutoffDate.getDate() - parseInt(filters.period));
+            
+            if (cardDate < cutoffDate) {
+                show = false;
+            }
+        }
+        
+        card.style.display = show ? 'block' : 'none';
+        
+        if (show) {
+            visibleCount++;
+            if (card.dataset.result === 'correct') {
+                correctCount++;
+            }
+        }
+    });
+    
+    // Update quick stats
+    updateQuickStats(visibleCount, correctCount);
+}
+
+function updateQuickStats(total = null, correct = null) {
+    if (total === null) {
+        total = document.querySelectorAll('.attempt-card:not([style*="display: none"])').length;
+        correct = document.querySelectorAll('.attempt-card:not([style*="display: none"])[data-result="correct"]').length;
+    }
+    
+    const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
+    
+    document.getElementById('quickStats').innerHTML = `
+        <div class="row">
+            <div class="col-6">
+                <h5 class="text-primary mb-1">${total}</h5>
+                <small class="text-muted">Total</small>
+            </div>
+            <div class="col-6">
+                <h5 class="text-success mb-1">${correct}</h5>
+                <small class="text-muted">Correct</small>
+            </div>
+        </div>
+        <div class="mt-2">
+            <small class="text-info">Accuracy: ${accuracy}%</small>
+        </div>
+    `;
+}
+
+function viewQuestion(questionId) {
+    currentQuestionId = questionId;
+    
+    fetch(`/api/questions/${questionId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayQuestionDetails(data.question);
+            } else {
+                showToast(data.error || 'Failed to load question details', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error loading question:', error);
+            showToast('Failed to load question details', 'error');
+        });
+}
+
+function displayQuestionDetails(question) {
+    let html = `
+        <div class="question-details">
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                <span class="badge bg-primary">${question.subject}</span>
+                <span class="badge bg-secondary">${question.chapter}</span>
+                <span class="badge bg-info">${question.topic}</span>
+                <span class="badge bg-warning text-dark">Level ${question.difficulty}</span>
+            </div>
+            
+            <div class="question-text mb-4">
+                <h6>Question:</h6>
+                <p>${question.question_text}</p>
+            </div>
+    `;
+    
+    if (question.options) {
+        html += '<div class="options mb-4"><h6>Options:</h6><div class="row">';
+        Object.entries(question.options).forEach(([key, value]) => {
+            const isCorrect = key === question.correct_answer;
+            const badgeClass = isCorrect ? 'bg-success' : 'bg-secondary';
+            
+            html += `
+                <div class="col-md-6 mb-2">
+                    <span class="badge ${badgeClass} me-2">${key}</span>
+                    ${value}
+                </div>
+            `;
+        });
+        html += '</div></div>';
+    }
+    
+    html += `
+            <div class="answer mb-3">
+                <h6>Correct Answer:</h6>
+                <span class="badge bg-success fs-6">${question.correct_answer}</span>
+            </div>
+    `;
+    
+    if (question.hint) {
+        html += `
+            <div class="hint">
+                <h6>Hint:</h6>
+                <div class="alert alert-info">${question.hint}</div>
+            </div>
+        `;
+    }
+    
+    if (question.stats) {
+        html += `
+            <div class="stats mt-4">
+                <h6>Question Statistics:</h6>
+                <div class="row text-center">
+                    <div class="col-4">
+                        <div class="h5 text-primary">${question.stats.total_attempts}</div>
+                        <small class="text-muted">Total Attempts</small>
+                    </div>
+                    <div class="col-4">
+                        <div class="h5 text-success">${question.stats.accuracy_rate}%</div>
+                        <small class="text-muted">Accuracy</small>
+                    </div>
+                    <div class="col-4">
+                        <div class="h5 text-info">${question.stats.avg_time}s</div>
+                        <small class="text-muted">Avg Time</small>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    html += '</div>';
+    
+    document.getElementById('questionModalBody').innerHTML = html;
+    new bootstrap.Modal(document.getElementById('questionModal')).show();
+}
+
+function getSolution(questionId) {
+    fetch(`/api/questions/${questionId}/solution`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displaySolution(data.solution);
+            } else {
+                showToast(data.error || 'Solution not available', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error loading solution:', error);
+            showToast('Failed to load solution', 'error');
+        });
+}
+
+function displaySolution(solution) {
+    let html = '<div class="solution-content">';
+    
+    if (solution.solution && solution.solution.step_by_step_solution) {
+        html += '<h6 class="mb-3">Step-by-Step Solution:</h6>';
+        
+        solution.solution.step_by_step_solution.forEach((step, index) => {
+            html += `
+                <div class="step mb-3 p-3 border rounded">
+                    <h6 class="text-primary">Step ${step.step}: ${step.description}</h6>
+                    <p class="mb-0">${step.explanation}</p>
+                </div>
+            `;
+        });
+        
+        if (solution.solution.key_concepts && solution.solution.key_concepts.length > 0) {
+            html += '<div class="mt-4"><h6>Key Concepts:</h6>';
+            solution.solution.key_concepts.forEach(concept => {
+                html += `<span class="badge bg-info me-2 mb-2">${concept}</span>`;
+            });
+            html += '</div>';
+        }
+        
+        if (solution.solution.common_mistakes && solution.solution.common_mistakes.length > 0) {
+            html += '<div class="mt-4"><h6>Common Mistakes:</h6><ul>';
+            solution.solution.common_mistakes.forEach(mistake => {
+                html += `<li class="text-warning">${mistake}</li>`;
+            });
+            html += '</ul></div>';
+        }
+        
+        if (solution.solution.time_saving_tips && solution.solution.time_saving_tips.length > 0) {
+            html += '<div class="mt-4"><h6>Time-Saving Tips:</h6><ul>';
+            solution.solution.time_saving_tips.forEach(tip => {
+                html += `<li class="text-success">${tip}</li>`;
+            });
+            html += '</ul></div>';
+        }
+    } else {
+        html += '<p class="text-muted">Detailed solution is not available for this question.</p>';
+    }
+    
+    html += '</div>';
+    
+    document.getElementById('solutionModalBody').innerHTML = html;
+    new bootstrap.Modal(document.getElementById('solutionModal')).show();
+}
+
+function practiceAgain(questionId) {
+    // Redirect to practice with specific question
+    const url = new URL(window.location.origin + '/student/practice');
+    url.searchParams.set('question_id', questionId);
+    window.location.href = url.toString();
+}
+
+function bookmarkQuestion() {
+    if (!currentQuestionId) return;
+    
+    fetch('/student/api/bookmark', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            question_id: currentQuestionId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message, 'success');
+        } else {
+            showToast(data.error || 'Failed to bookmark question', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error bookmarking question:', error);
+        showToast('Failed to bookmark question', 'error');
+    });
+}
+
+function loadMoreAttempts() {
+    // This would typically load more attempts from server
+    // For now, just show a message
+    showToast('All attempts loaded', 'info');
+}
+
+// Initialize filters on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateQuickStats();
+});
+</script>
+{% endblock %}

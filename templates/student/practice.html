@@ -1,0 +1,1015 @@
+{% extends "shared/layout.html" %}
+
+{% block title %}Practice - Coaching App{% endblock %}
+
+{% block extra_head %}
+<style>
+.mode-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.mode-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--bs-primary);
+}
+
+.mode-card.selected {
+    border-color: var(--bs-primary);
+    background: rgba(var(--bs-primary-rgb), 0.1);
+}
+
+.question-card {
+    min-height: 400px;
+}
+
+.option-btn {
+    text-align: left;
+    white-space: normal;
+    word-wrap: break-word;
+}
+
+.timer {
+    font-family: 'Courier New', monospace;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.timer.warning {
+    color: var(--bs-warning);
+}
+
+.timer.danger {
+    color: var(--bs-danger);
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.session-stats {
+    position: sticky;
+    top: 80px;
+    z-index: 10;
+}
+
+.question-actions {
+    position: sticky;
+    bottom: 0;
+    background: var(--bs-dark);
+    border-top: 1px solid var(--bs-border-color);
+    padding: 1rem 0;
+    margin: 0 -15px;
+    z-index: 10;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="practiceApp">
+    <!-- Practice Mode Selection -->
+    <div id="modeSelection" class="row">
+        <div class="col-12 mb-4">
+            <h3><i class="fas fa-brain me-2"></i>Choose Practice Mode</h3>
+            <p class="text-muted">Select how you want to practice today</p>
+        </div>
+        
+        <!-- Adaptive Mode -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card mode-card h-100" data-mode="adaptive">
+                <div class="card-body text-center">
+                    <div class="text-primary mb-3">
+                        <i class="fas fa-magic fa-3x"></i>
+                    </div>
+                    <h5 class="card-title">Adaptive Practice</h5>
+                    <p class="card-text">AI-powered question selection based on your strengths and weaknesses</p>
+                    <div class="mt-auto">
+                        <span class="badge bg-primary">Recommended</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Topic Practice -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card mode-card h-100" data-mode="topic">
+                <div class="card-body text-center">
+                    <div class="text-info mb-3">
+                        <i class="fas fa-bullseye fa-3x"></i>
+                    </div>
+                    <h5 class="card-title">Topic Practice</h5>
+                    <p class="card-text">Focus on specific topics you want to improve</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chapter Practice -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card mode-card h-100" data-mode="chapter">
+                <div class="card-body text-center">
+                    <div class="text-success mb-3">
+                        <i class="fas fa-book fa-3x"></i>
+                    </div>
+                    <h5 class="card-title">Chapter Practice</h5>
+                    <p class="card-text">Practice entire chapters systematically</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Multi-Subject -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card mode-card h-100" data-mode="multi_subject">
+                <div class="card-body text-center">
+                    <div class="text-warning mb-3">
+                        <i class="fas fa-layer-group fa-3x"></i>
+                    </div>
+                    <h5 class="card-title">Multi-Subject</h5>
+                    <p class="card-text">Practice across multiple subjects</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Revision Mode -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card mode-card h-100" data-mode="revision">
+                <div class="card-body text-center">
+                    <div class="text-danger mb-3">
+                        <i class="fas fa-redo fa-3x"></i>
+                    </div>
+                    <h5 class="card-title">Revision</h5>
+                    <p class="card-text">Review previously attempted questions</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mock Test Mode -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card mode-card h-100" data-mode="mock">
+                <div class="card-body text-center">
+                    <div class="text-secondary mb-3">
+                        <i class="fas fa-clock fa-3x"></i>
+                    </div>
+                    <h5 class="card-title">Mock Test</h5>
+                    <p class="card-text">Timed practice sessions</p>
+                    <div class="mt-auto">
+                        <span class="badge bg-secondary">Coming Soon</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Subject/Topic Selection -->
+    <div id="topicSelection" class="d-none">
+        <div class="row">
+            <div class="col-12 mb-4">
+                <button type="button" class="btn btn-outline-secondary" onclick="showModeSelection()">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Mode Selection
+                </button>
+            </div>
+            
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Select Subjects</h5>
+                    </div>
+                    <div class="card-body">
+                        {% for subject in subjects %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="{{ subject }}" id="subject{{ loop.index }}" name="subjects">
+                            <label class="form-check-label" for="subject{{ loop.index }}">
+                                {{ subject }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Advanced Options</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Device Type</label>
+                            <select class="form-select" id="deviceType">
+                                <option value="personal">Personal Device</option>
+                                <option value="kiosk">Kiosk/Shared Device</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3" id="topicSelectionDiv" style="display: none;">
+                            <label class="form-label">Specific Topics</label>
+                            <select class="form-select" id="topicSelect" multiple>
+                                <!-- Topics will be loaded dynamically -->
+                            </select>
+                            <small class="form-text text-muted">Hold Ctrl/Cmd to select multiple topics</small>
+                        </div>
+                        
+                        <button type="button" class="btn btn-primary" onclick="startPracticeSession()">
+                            <i class="fas fa-play me-2"></i>Start Practice
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Practice Session -->
+    <div id="practiceSession" class="d-none">
+        <!-- Session Stats -->
+        <div class="session-stats bg-dark p-3 rounded mb-4">
+            <div class="row text-center">
+                <div class="col-6 col-md-3">
+                    <div class="timer" id="sessionTimer">00:00</div>
+                    <small class="text-muted">Time</small>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="h5 text-info mb-0" id="questionNumber">1</div>
+                    <small class="text-muted">Question</small>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="h5 text-success mb-0" id="correctCount">0</div>
+                    <small class="text-muted">Correct</small>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="h5 text-warning mb-0" id="accuracyPercent">0%</div>
+                    <small class="text-muted">Accuracy</small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Question Display -->
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="card question-card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="badge bg-primary" id="questionSubject"></span>
+                            <span class="badge bg-secondary" id="questionTopic"></span>
+                            <span class="badge bg-info" id="questionDifficulty"></span>
+                        </div>
+                        <div>
+                            <button type="button" class="btn btn-sm btn-outline-warning" onclick="toggleBookmark()" id="bookmarkBtn">
+                                <i class="far fa-bookmark"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="endSession()">
+                                <i class="fas fa-stop"></i> End
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Question Timer -->
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="card-subtitle text-muted mb-0">Question <span id="currentQuestionNum">1</span></h6>
+                            <div class="timer" id="questionTimer">00:00</div>
+                        </div>
+                        
+                        <!-- Question Text -->
+                        <div class="question-text mb-4" id="questionText">
+                            <!-- Question will be loaded here -->
+                        </div>
+                        
+                        <!-- Options (for MCQ) -->
+                        <div id="optionsContainer" class="d-none">
+                            <div class="d-grid gap-2">
+                                <!-- Options will be loaded here -->
+                            </div>
+                        </div>
+                        
+                        <!-- Text Answer (for subjective) -->
+                        <div id="textAnswerContainer" class="d-none">
+                            <div class="mb-3">
+                                <label for="textAnswer" class="form-label">Your Answer:</label>
+                                <textarea class="form-control" id="textAnswer" rows="3" placeholder="Enter your answer here..."></textarea>
+                            </div>
+                        </div>
+                        
+                        <!-- Hint (if available) -->
+                        <div id="hintContainer" class="d-none">
+                            <div class="alert alert-info">
+                                <h6><i class="fas fa-lightbulb me-2"></i>Hint:</h6>
+                                <p id="hintText" class="mb-0"></p>
+                            </div>
+                        </div>
+                        
+                        <!-- Solution (after attempts) -->
+                        <div id="solutionContainer" class="d-none">
+                            <div class="alert alert-success">
+                                <h6><i class="fas fa-check-circle me-2"></i>Solution:</h6>
+                                <div id="solutionContent"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Loading State -->
+                        <div id="loadingState" class="text-center d-none">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2 text-muted">Loading next question...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Question Actions -->
+                    <div class="question-actions bg-dark">
+                        <div class="container">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <button type="button" class="btn btn-outline-secondary" onclick="skipQuestion()" id="skipBtn">
+                                    <i class="fas fa-forward me-2"></i>Skip
+                                </button>
+                                
+                                <div class="text-center">
+                                    <div id="attemptInfo" class="small text-muted mb-1">Attempt 1 of 2</div>
+                                    <button type="button" class="btn btn-primary" onclick="submitAnswer()" id="submitBtn" disabled>
+                                        <i class="fas fa-check me-2"></i>Submit Answer
+                                    </button>
+                                </div>
+                                
+                                <button type="button" class="btn btn-outline-info" onclick="askDoubt()" id="doubtBtn">
+                                    <i class="fas fa-question-circle me-2"></i>Ask Doubt
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Session Complete -->
+    <div id="sessionComplete" class="d-none">
+        <div class="row">
+            <div class="col-lg-6 mx-auto">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <div class="text-success mb-3">
+                            <i class="fas fa-trophy fa-4x"></i>
+                        </div>
+                        <h3>Session Complete!</h3>
+                        <p class="text-muted mb-4">Great job on completing your practice session</p>
+                        
+                        <div class="row text-center mb-4">
+                            <div class="col-6 col-md-3">
+                                <h4 class="text-primary" id="finalQuestions">0</h4>
+                                <small class="text-muted">Questions</small>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <h4 class="text-success" id="finalCorrect">0</h4>
+                                <small class="text-muted">Correct</small>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <h4 class="text-info" id="finalAccuracy">0%</h4>
+                                <small class="text-muted">Accuracy</small>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <h4 class="text-warning" id="finalTime">0</h4>
+                                <small class="text-muted">Time</small>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                            <button type="button" class="btn btn-primary" onclick="startNewSession()">
+                                <i class="fas fa-redo me-2"></i>Practice Again
+                            </button>
+                            <a href="{{ url_for('students.review') }}" class="btn btn-outline-info">
+                                <i class="fas fa-history me-2"></i>Review Answers
+                            </a>
+                            <a href="{{ url_for('students.home') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-home me-2"></i>Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Doubt Modal -->
+<div class="modal fade" id="doubtModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ask a Doubt</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="doubtForm">
+                    <div class="mb-3">
+                        <label for="doubtMessage" class="form-label">Your Question/Doubt:</label>
+                        <textarea class="form-control" id="doubtMessage" rows="4" placeholder="Describe your doubt in detail..." required></textarea>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="attachQuestion" checked>
+                        <label class="form-check-label" for="attachQuestion">
+                            Attach current question to this doubt
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitDoubt()">Submit Doubt</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/timer.js') }}"></script>
+<script>
+// Practice session state
+let practiceState = {
+    sessionId: null,
+    currentQuestion: null,
+    selectedMode: null,
+    sessionTimer: null,
+    questionTimer: null,
+    attemptNumber: 1,
+    selectedAnswer: null,
+    questionsAttempted: 0,
+    questionsCorrect: 0,
+    sessionStartTime: null,
+    questionStartTime: null
+};
+
+// Initialize practice app
+document.addEventListener('DOMContentLoaded', function() {
+    // Check for active session
+    {% if active_session %}
+        practiceState.sessionId = {{ active_session.id }};
+        showPracticeSession();
+        loadNextQuestion();
+    {% endif %}
+    
+    // Mode selection handlers
+    document.querySelectorAll('.mode-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const mode = this.dataset.mode;
+            if (mode === 'mock') return; // Not implemented yet
+            
+            selectMode(mode);
+        });
+    });
+    
+    // Subject checkbox handlers
+    document.querySelectorAll('input[name="subjects"]').forEach(checkbox => {
+        checkbox.addEventListener('change', updateTopicOptions);
+    });
+});
+
+function selectMode(mode) {
+    practiceState.selectedMode = mode;
+    
+    // Clear previous selections
+    document.querySelectorAll('.mode-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    
+    // Highlight selected mode
+    document.querySelector(`[data-mode="${mode}"]`).classList.add('selected');
+    
+    // Show topic selection for relevant modes
+    if (['topic', 'chapter', 'multi_subject'].includes(mode)) {
+        document.getElementById('modeSelection').classList.add('d-none');
+        document.getElementById('topicSelection').classList.remove('d-none');
+        
+        if (mode === 'topic') {
+            document.getElementById('topicSelectionDiv').style.display = 'block';
+        }
+    } else {
+        // For adaptive and revision, start directly
+        startPracticeSession();
+    }
+}
+
+function showModeSelection() {
+    document.getElementById('topicSelection').classList.add('d-none');
+    document.getElementById('modeSelection').classList.remove('d-none');
+    practiceState.selectedMode = null;
+}
+
+function updateTopicOptions() {
+    const selectedSubjects = Array.from(document.querySelectorAll('input[name="subjects"]:checked'))
+        .map(cb => cb.value);
+    
+    if (selectedSubjects.length === 0) return;
+    
+    // Fetch topics for selected subjects
+    fetch(`/api/questions/topics?${selectedSubjects.map(s => `subject=${s}`).join('&')}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const topicSelect = document.getElementById('topicSelect');
+                topicSelect.innerHTML = '';
+                
+                data.topics.forEach(topic => {
+                    const option = document.createElement('option');
+                    option.value = topic;
+                    option.textContent = topic;
+                    topicSelect.appendChild(option);
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching topics:', error);
+        });
+}
+
+function startPracticeSession() {
+    const sessionData = {
+        mode: practiceState.selectedMode,
+        device_type: document.getElementById('deviceType')?.value || 'personal'
+    };
+    
+    // Add subjects/topics based on mode
+    if (['multi_subject', 'topic', 'chapter'].includes(practiceState.selectedMode)) {
+        const selectedSubjects = Array.from(document.querySelectorAll('input[name="subjects"]:checked'))
+            .map(cb => cb.value);
+        
+        if (selectedSubjects.length === 0) {
+            showToast('Please select at least one subject', 'warning');
+            return;
+        }
+        
+        sessionData.subjects = selectedSubjects;
+        
+        if (practiceState.selectedMode === 'topic') {
+            const selectedTopics = Array.from(document.getElementById('topicSelect').selectedOptions)
+                .map(option => option.value);
+            
+            if (selectedTopics.length === 0) {
+                showToast('Please select at least one topic', 'warning');
+                return;
+            }
+            
+            sessionData.topics = selectedTopics;
+        }
+    }
+    
+    // Start session
+    fetch('/student/api/start-session', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(sessionData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            practiceState.sessionId = data.session_id;
+            practiceState.sessionStartTime = new Date();
+            showPracticeSession();
+            loadNextQuestion();
+        } else {
+            showToast(data.error || 'Failed to start session', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error starting session:', error);
+        showToast('Failed to start practice session', 'error');
+    });
+}
+
+function showPracticeSession() {
+    document.getElementById('modeSelection').classList.add('d-none');
+    document.getElementById('topicSelection').classList.add('d-none');
+    document.getElementById('practiceSession').classList.remove('d-none');
+    
+    // Start session timer
+    startSessionTimer();
+}
+
+function loadNextQuestion() {
+    if (!practiceState.sessionId) return;
+    
+    // Show loading state
+    document.getElementById('loadingState').classList.remove('d-none');
+    document.getElementById('questionText').classList.add('d-none');
+    document.getElementById('optionsContainer').classList.add('d-none');
+    document.getElementById('textAnswerContainer').classList.add('d-none');
+    document.getElementById('hintContainer').classList.add('d-none');
+    document.getElementById('solutionContainer').classList.add('d-none');
+    
+    // Reset attempt state
+    practiceState.attemptNumber = 1;
+    practiceState.selectedAnswer = null;
+    practiceState.questionStartTime = new Date();
+    
+    // Update attempt info
+    document.getElementById('attemptInfo').textContent = 'Attempt 1 of 2';
+    document.getElementById('submitBtn').disabled = true;
+    
+    // Start question timer
+    startQuestionTimer();
+    
+    fetch(`/student/api/next-question?session_id=${practiceState.sessionId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                practiceState.currentQuestion = data.question;
+                displayQuestion(data.question);
+            } else {
+                showToast(data.error || 'No more questions available', 'info');
+                endSession();
+            }
+        })
+        .catch(error => {
+            console.error('Error loading question:', error);
+            showToast('Failed to load next question', 'error');
+        })
+        .finally(() => {
+            document.getElementById('loadingState').classList.add('d-none');
+        });
+}
+
+function displayQuestion(question) {
+    // Update question info
+    document.getElementById('questionSubject').textContent = question.subject;
+    document.getElementById('questionTopic').textContent = question.topic;
+    document.getElementById('questionDifficulty').textContent = `Level ${question.difficulty}`;
+    
+    // Update question number
+    practiceState.questionsAttempted++;
+    document.getElementById('currentQuestionNum').textContent = practiceState.questionsAttempted;
+    document.getElementById('questionNumber').textContent = practiceState.questionsAttempted;
+    
+    // Display question text
+    document.getElementById('questionText').innerHTML = question.question_text;
+    document.getElementById('questionText').classList.remove('d-none');
+    
+    // Check if bookmarked
+    updateBookmarkButton(false); // Default to not bookmarked
+    
+    if (question.is_mcq && question.options) {
+        // Display MCQ options
+        displayMCQOptions(question.options);
+    } else {
+        // Display text answer input
+        document.getElementById('textAnswerContainer').classList.remove('d-none');
+        document.getElementById('textAnswer').value = '';
+        document.getElementById('textAnswer').addEventListener('input', function() {
+            document.getElementById('submitBtn').disabled = this.value.trim() === '';
+        });
+    }
+}
+
+function displayMCQOptions(options) {
+    const container = document.getElementById('optionsContainer');
+    container.innerHTML = '';
+    container.classList.remove('d-none');
+    
+    Object.entries(options).forEach(([key, value]) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'btn btn-outline-light option-btn mb-2 text-start';
+        button.innerHTML = `<strong>${key})</strong> ${value}`;
+        button.onclick = () => selectOption(key, button);
+        
+        container.appendChild(button);
+    });
+}
+
+function selectOption(optionKey, buttonElement) {
+    // Clear previous selection
+    document.querySelectorAll('.option-btn').forEach(btn => {
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-outline-light');
+    });
+    
+    // Highlight selected option
+    buttonElement.classList.remove('btn-outline-light');
+    buttonElement.classList.add('btn-primary');
+    
+    practiceState.selectedAnswer = optionKey;
+    document.getElementById('submitBtn').disabled = false;
+}
+
+function submitAnswer() {
+    if (!practiceState.selectedAnswer && !document.getElementById('textAnswer').value.trim()) {
+        showToast('Please select an answer', 'warning');
+        return;
+    }
+    
+    const answer = practiceState.selectedAnswer || document.getElementById('textAnswer').value.trim();
+    const timeTaken = Math.floor((new Date() - practiceState.questionStartTime) / 1000);
+    
+    fetch('/student/api/submit-attempt', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            question_id: practiceState.currentQuestion.id,
+            chosen_answer: answer,
+            time_taken: timeTaken,
+            session_id: practiceState.sessionId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            handleAttemptResult(data);
+        } else {
+            showToast(data.error || 'Failed to submit answer', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error submitting answer:', error);
+        showToast('Failed to submit answer', 'error');
+    });
+}
+
+function handleAttemptResult(result) {
+    // Update stats
+    if (result.is_correct) {
+        practiceState.questionsCorrect++;
+        document.getElementById('correctCount').textContent = practiceState.questionsCorrect;
+        showToast('Correct! 🎉', 'success');
+    } else {
+        showToast('Incorrect. Try again!', 'error');
+    }
+    
+    // Update accuracy
+    const accuracy = Math.round((practiceState.questionsCorrect / practiceState.questionsAttempted) * 100);
+    document.getElementById('accuracyPercent').textContent = `${accuracy}%`;
+    
+    // Show hint if first attempt was wrong
+    if (!result.is_correct && practiceState.attemptNumber === 1 && result.hint) {
+        document.getElementById('hintText').textContent = result.hint;
+        document.getElementById('hintContainer').classList.remove('d-none');
+        
+        // Update attempt info
+        practiceState.attemptNumber = 2;
+        document.getElementById('attemptInfo').textContent = 'Attempt 2 of 2';
+        
+        // Re-enable submit button
+        practiceState.selectedAnswer = null;
+        document.getElementById('submitBtn').disabled = true;
+        
+        // Reset option selection
+        document.querySelectorAll('.option-btn').forEach(btn => {
+            btn.classList.remove('btn-primary');
+            btn.classList.add('btn-outline-light');
+        });
+        
+        return;
+    }
+    
+    // Show solution if available
+    if (result.solution) {
+        displaySolution(result.solution);
+    }
+    
+    // Load next question after delay
+    setTimeout(() => {
+        loadNextQuestion();
+    }, 2000);
+}
+
+function displaySolution(solution) {
+    const container = document.getElementById('solutionContent');
+    
+    if (solution.solution && solution.solution.step_by_step_solution) {
+        let html = '<div class="solution-steps">';
+        
+        solution.solution.step_by_step_solution.forEach((step, index) => {
+            html += `
+                <div class="step mb-3">
+                    <h6 class="text-primary">Step ${step.step}: ${step.description}</h6>
+                    <p class="mb-0">${step.explanation}</p>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        
+        if (solution.solution.key_concepts && solution.solution.key_concepts.length > 0) {
+            html += '<div class="mt-3"><strong>Key Concepts:</strong> ' + 
+                    solution.solution.key_concepts.map(concept => `<span class="badge bg-info me-1">${concept}</span>`).join('') + 
+                    '</div>';
+        }
+        
+        container.innerHTML = html;
+    } else {
+        container.innerHTML = '<p>Solution explanation not available.</p>';
+    }
+    
+    document.getElementById('solutionContainer').classList.remove('d-none');
+}
+
+function skipQuestion() {
+    if (confirm('Are you sure you want to skip this question?')) {
+        loadNextQuestion();
+    }
+}
+
+function toggleBookmark() {
+    if (!practiceState.currentQuestion) return;
+    
+    fetch('/student/api/bookmark', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            question_id: practiceState.currentQuestion.id
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            updateBookmarkButton(data.bookmarked);
+            showToast(data.message, 'success');
+        } else {
+            showToast(data.error || 'Failed to toggle bookmark', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error toggling bookmark:', error);
+        showToast('Failed to toggle bookmark', 'error');
+    });
+}
+
+function updateBookmarkButton(isBookmarked) {
+    const btn = document.getElementById('bookmarkBtn');
+    const icon = btn.querySelector('i');
+    
+    if (isBookmarked) {
+        icon.className = 'fas fa-bookmark';
+        btn.title = 'Remove bookmark';
+    } else {
+        icon.className = 'far fa-bookmark';
+        btn.title = 'Add bookmark';
+    }
+}
+
+function askDoubt() {
+    const modal = new bootstrap.Modal(document.getElementById('doubtModal'));
+    modal.show();
+}
+
+function submitDoubt() {
+    const message = document.getElementById('doubtMessage').value.trim();
+    if (!message) {
+        showToast('Please enter your doubt', 'warning');
+        return;
+    }
+    
+    const doubtData = {
+        message: message
+    };
+    
+    if (document.getElementById('attachQuestion').checked && practiceState.currentQuestion) {
+        doubtData.question_id = practiceState.currentQuestion.id;
+    }
+    
+    fetch('/student/api/submit-doubt', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(doubtData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message, 'success');
+            bootstrap.Modal.getInstance(document.getElementById('doubtModal')).hide();
+            document.getElementById('doubtForm').reset();
+        } else {
+            showToast(data.error || 'Failed to submit doubt', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error submitting doubt:', error);
+        showToast('Failed to submit doubt', 'error');
+    });
+}
+
+function endSession() {
+    if (!practiceState.sessionId) return;
+    
+    if (!confirm('Are you sure you want to end this practice session?')) return;
+    
+    fetch('/student/api/end-session', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            session_id: practiceState.sessionId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showSessionComplete(data.session_stats);
+        } else {
+            showToast(data.error || 'Failed to end session', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error ending session:', error);
+        showToast('Failed to end session', 'error');
+    })
+    .finally(() => {
+        stopTimers();
+    });
+}
+
+function showSessionComplete(stats) {
+    document.getElementById('practiceSession').classList.add('d-none');
+    document.getElementById('sessionComplete').classList.remove('d-none');
+    
+    // Update final stats
+    document.getElementById('finalQuestions').textContent = stats.questions_attempted;
+    document.getElementById('finalCorrect').textContent = stats.questions_correct;
+    document.getElementById('finalAccuracy').textContent = `${stats.accuracy}%`;
+    document.getElementById('finalTime').textContent = formatTime(stats.total_time);
+}
+
+function startNewSession() {
+    // Reset state
+    practiceState = {
+        sessionId: null,
+        currentQuestion: null,
+        selectedMode: null,
+        sessionTimer: null,
+        questionTimer: null,
+        attemptNumber: 1,
+        selectedAnswer: null,
+        questionsAttempted: 0,
+        questionsCorrect: 0,
+        sessionStartTime: null,
+        questionStartTime: null
+    };
+    
+    // Show mode selection
+    document.getElementById('sessionComplete').classList.add('d-none');
+    document.getElementById('modeSelection').classList.remove('d-none');
+    
+    // Reset UI
+    document.getElementById('correctCount').textContent = '0';
+    document.getElementById('accuracyPercent').textContent = '0%';
+    document.getElementById('questionNumber').textContent = '1';
+}
+
+function startSessionTimer() {
+    if (practiceState.sessionTimer) clearInterval(practiceState.sessionTimer);
+    
+    practiceState.sessionTimer = setInterval(() => {
+        const elapsed = Math.floor((new Date() - practiceState.sessionStartTime) / 1000);
+        document.getElementById('sessionTimer').textContent = formatTime(elapsed);
+    }, 1000);
+}
+
+function startQuestionTimer() {
+    if (practiceState.questionTimer) clearInterval(practiceState.questionTimer);
+    
+    practiceState.questionTimer = setInterval(() => {
+        const elapsed = Math.floor((new Date() - practiceState.questionStartTime) / 1000);
+        const timerElement = document.getElementById('questionTimer');
+        timerElement.textContent = formatTime(elapsed);
+        
+        // Change color based on time
+        if (elapsed > 120) { // 2 minutes
+            timerElement.className = 'timer danger';
+        } else if (elapsed > 60) { // 1 minute
+            timerElement.className = 'timer warning';
+        } else {
+            timerElement.className = 'timer';
+        }
+    }, 1000);
+}
+
+function stopTimers() {
+    if (practiceState.sessionTimer) {
+        clearInterval(practiceState.sessionTimer);
+        practiceState.sessionTimer = null;
+    }
+    
+    if (practiceState.questionTimer) {
+        clearInterval(practiceState.questionTimer);
+        practiceState.questionTimer = null;
+    }
+}
+
+function formatTime(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+}
+
+// Cleanup timers when leaving page
+window.addEventListener('beforeunload', stopTimers);
+</script>
+{% endblock %}

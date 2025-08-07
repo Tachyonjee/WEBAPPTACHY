@@ -1,0 +1,592 @@
+{% extends "shared/layout.html" %}
+
+{% block title %}Bulk Upload - Coaching App{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h2 mb-4">
+                <i class="fas fa-upload me-2"></i>
+                Bulk Upload Questions
+            </h1>
+        </div>
+    </div>
+    
+    <!-- Progress Steps -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="step" id="step1">
+                            <div class="step-circle bg-primary text-white">1</div>
+                            <div class="step-label">Upload File</div>
+                        </div>
+                        <div class="step-line"></div>
+                        <div class="step" id="step2">
+                            <div class="step-circle bg-secondary">2</div>
+                            <div class="step-label">Validate & Preview</div>
+                        </div>
+                        <div class="step-line"></div>
+                        <div class="step" id="step3">
+                            <div class="step-circle bg-secondary">3</div>
+                            <div class="step-label">Import</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Step 1: File Upload -->
+    <div id="uploadStep" class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Step 1: Upload Your File</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Template Download -->
+                    <div class="mb-4">
+                        <h6>Download Template</h6>
+                        <p class="text-muted">
+                            Use our template to ensure your data is properly formatted.
+                        </p>
+                        <a href="/api/questions/template" class="btn btn-outline-primary" download>
+                            <i class="fas fa-download me-1"></i>
+                            Download CSV Template
+                        </a>
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- File Upload -->
+                    <div class="mb-4">
+                        <h6>Upload Your File</h6>
+                        <div id="uploadArea" class="upload-area border-2 border-dashed rounded p-4 text-center">
+                            <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                            <h5>Drag and drop your file here</h5>
+                            <p class="text-muted">or click to select a file</p>
+                            <input type="file" id="fileInput" class="d-none" accept=".csv,.xlsx,.xls">
+                            <button type="button" class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+                                <i class="fas fa-folder-open me-1"></i>
+                                Choose File
+                            </button>
+                        </div>
+                        <div class="form-text">
+                            Supported formats: CSV, Excel (.xlsx, .xls). Maximum file size: 10MB.
+                        </div>
+                    </div>
+                    
+                    <!-- File Info -->
+                    <div id="fileInfo" class="mb-3" style="display: none;">
+                        <div class="alert alert-info">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fas fa-file me-2"></i>
+                                    <strong id="fileName"></strong>
+                                    <span id="fileSize" class="text-muted ms-2"></span>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearFile()">
+                                    <i class="fas fa-times me-1"></i>
+                                    Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Expected Format -->
+                    <div class="mt-4">
+                        <h6>Expected Format</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>subject</th>
+                                        <th>chapter</th>
+                                        <th>topic</th>
+                                        <th>difficulty</th>
+                                        <th>question_text</th>
+                                        <th>optionA</th>
+                                        <th>optionB</th>
+                                        <th>optionC</th>
+                                        <th>optionD</th>
+                                        <th>correct_answer</th>
+                                        <th>hint</th>
+                                        <th>source</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Physics</td>
+                                        <td>Mechanics</td>
+                                        <td>Motion</td>
+                                        <td>2</td>
+                                        <td>What is velocity?</td>
+                                        <td>Speed</td>
+                                        <td>Distance/Time</td>
+                                        <td>Displacement/Time</td>
+                                        <td>Force</td>
+                                        <td>Displacement/Time</td>
+                                        <td>Think about vector vs scalar</td>
+                                        <td>NCERT</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <small class="text-muted">
+                            * Required fields: subject, chapter, topic, difficulty, question_text, correct_answer<br>
+                            * Optional fields: optionA-D (for MCQs), hint, source<br>
+                            * Difficulty: 1-5 (1=Very Easy, 5=Very Hard)
+                        </small>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button id="validateBtn" class="btn btn-primary" disabled onclick="validateFile()">
+                            <i class="fas fa-check me-1"></i>
+                            Validate & Preview
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Step 2: Validation and Preview -->
+    <div id="validationStep" class="row" style="display: none;">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Step 2: Validation Results</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Validation Results -->
+                    <div id="validationResults"></div>
+                    
+                    <!-- Preview Table -->
+                    <div id="previewSection" style="display: none;">
+                        <h6 class="mt-4">Data Preview (First 10 rows)</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped" id="previewTable">
+                                <!-- Preview data will be inserted here -->
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button type="button" class="btn btn-secondary me-2" onclick="goBackToUpload()">
+                            <i class="fas fa-arrow-left me-1"></i>
+                            Back to Upload
+                        </button>
+                        <button id="importBtn" class="btn btn-success" style="display: none;" onclick="importData()">
+                            <i class="fas fa-upload me-1"></i>
+                            Import Questions
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Step 3: Import Results -->
+    <div id="importStep" class="row" style="display: none;">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Step 3: Import Complete</h5>
+                </div>
+                <div class="card-body">
+                    <div id="importResults" class="text-center">
+                        <!-- Import results will be shown here -->
+                    </div>
+                    
+                    <div class="mt-4 text-center">
+                        <button type="button" class="btn btn-primary me-2" onclick="window.location.reload()">
+                            <i class="fas fa-upload me-1"></i>
+                            Upload Another File
+                        </button>
+                        <a href="/operator/questions/bank" class="btn btn-secondary">
+                            <i class="fas fa-list me-1"></i>
+                            View Question Bank
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let selectedFile = null;
+let validationData = null;
+
+// File upload handling
+const uploadArea = document.getElementById('uploadArea');
+const fileInput = document.getElementById('fileInput');
+
+// Drag and drop
+uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.classList.add('border-primary', 'bg-light');
+});
+
+uploadArea.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove('border-primary', 'bg-light');
+});
+
+uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove('border-primary', 'bg-light');
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+        handleFileSelection(files[0]);
+    }
+});
+
+uploadArea.addEventListener('click', () => {
+    fileInput.click();
+});
+
+fileInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+        handleFileSelection(e.target.files[0]);
+    }
+});
+
+function handleFileSelection(file) {
+    // Validate file type
+    const validTypes = ['.csv', '.xlsx', '.xls'];
+    const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+    
+    if (!validTypes.includes(fileExtension)) {
+        showFlash('Please select a CSV or Excel file', 'error');
+        return;
+    }
+    
+    // Validate file size (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+        showFlash('File size should be less than 10MB', 'error');
+        return;
+    }
+    
+    selectedFile = file;
+    showFileInfo(file);
+}
+
+function showFileInfo(file) {
+    document.getElementById('fileName').textContent = file.name;
+    document.getElementById('fileSize').textContent = `(${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+    document.getElementById('fileInfo').style.display = 'block';
+    document.getElementById('validateBtn').disabled = false;
+}
+
+function clearFile() {
+    selectedFile = null;
+    fileInput.value = '';
+    document.getElementById('fileInfo').style.display = 'none';
+    document.getElementById('validateBtn').disabled = true;
+}
+
+async function validateFile() {
+    if (!selectedFile) {
+        showFlash('Please select a file first', 'error');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+    formData.append('action', 'preview');
+    
+    try {
+        showLoading('Validating file...');
+        
+        const response = await fetch('/api/questions/bulk-upload', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+            },
+            body: formData
+        });
+        
+        const data = await response.json();
+        hideLoading();
+        
+        if (response.ok) {
+            validationData = data;
+            showValidationResults(data);
+            updateStep(2);
+        } else {
+            showValidationErrors(data);
+        }
+    } catch (error) {
+        hideLoading();
+        showFlash('Error validating file', 'error');
+        console.error('Validation error:', error);
+    }
+}
+
+function showValidationResults(data) {
+    const resultsContainer = document.getElementById('validationResults');
+    
+    if (data.valid) {
+        let html = `
+            <div class="alert alert-success">
+                <h6><i class="fas fa-check-circle me-2"></i>Validation Successful!</h6>
+                <p class="mb-0">File contains ${data.total_rows} questions and is ready for import.</p>
+            </div>
+        `;
+        
+        if (data.warnings && data.warnings.length > 0) {
+            html += `
+                <div class="alert alert-warning mt-3">
+                    <h6><i class="fas fa-exclamation-triangle me-2"></i>Warnings:</h6>
+                    <ul class="mb-0">
+                        ${data.warnings.map(warning => `<li>${warning}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+        
+        resultsContainer.innerHTML = html;
+        showPreview(data.preview);
+        document.getElementById('importBtn').style.display = 'inline-block';
+    } else {
+        showValidationErrors(data);
+    }
+}
+
+function showValidationErrors(data) {
+    const resultsContainer = document.getElementById('validationResults');
+    
+    let html = `
+        <div class="alert alert-danger">
+            <h6><i class="fas fa-times-circle me-2"></i>Validation Failed</h6>
+    `;
+    
+    if (data.errors && data.errors.length > 0) {
+        html += `
+            <p>Please fix the following errors:</p>
+            <ul class="mb-0">
+                ${data.errors.map(error => `<li>${error}</li>`).join('')}
+            </ul>
+        `;
+    }
+    
+    html += '</div>';
+    resultsContainer.innerHTML = html;
+    
+    document.getElementById('previewSection').style.display = 'none';
+    document.getElementById('importBtn').style.display = 'none';
+}
+
+function showPreview(previewData) {
+    if (!previewData || previewData.length === 0) {
+        return;
+    }
+    
+    const table = document.getElementById('previewTable');
+    const headers = Object.keys(previewData[0]);
+    
+    let html = '<thead class="table-dark"><tr>';
+    headers.forEach(header => {
+        html += `<th>${header}</th>`;
+    });
+    html += '</tr></thead><tbody>';
+    
+    previewData.forEach(row => {
+        html += '<tr>';
+        headers.forEach(header => {
+            let value = row[header] || '';
+            if (typeof value === 'string' && value.length > 50) {
+                value = value.substring(0, 50) + '...';
+            }
+            html += `<td>${value}</td>`;
+        });
+        html += '</tr>';
+    });
+    
+    html += '</tbody>';
+    table.innerHTML = html;
+    document.getElementById('previewSection').style.display = 'block';
+}
+
+async function importData() {
+    if (!selectedFile || !validationData) {
+        showFlash('No valid data to import', 'error');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+    
+    try {
+        showLoading('Importing questions...');
+        
+        const response = await fetch('/api/questions/bulk-upload', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+            },
+            body: formData
+        });
+        
+        const data = await response.json();
+        hideLoading();
+        
+        showImportResults(data);
+        updateStep(3);
+    } catch (error) {
+        hideLoading();
+        showFlash('Error importing questions', 'error');
+        console.error('Import error:', error);
+    }
+}
+
+function showImportResults(data) {
+    const resultsContainer = document.getElementById('importResults');
+    
+    if (data.success) {
+        let html = `
+            <div class="mb-4">
+                <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                <h4 class="text-success">Import Successful!</h4>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body text-center">
+                            <h3>${data.imported}</h3>
+                            <p class="mb-0">New Questions Added</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body text-center">
+                            <h3>${data.updated}</h3>
+                            <p class="mb-0">Questions Updated</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        if (data.errors && data.errors.length > 0) {
+            html += `
+                <div class="alert alert-warning mt-3">
+                    <h6>Some issues occurred:</h6>
+                    <ul class="mb-0">
+                        ${data.errors.slice(0, 5).map(error => `<li>${error}</li>`).join('')}
+                    </ul>
+                    ${data.errors.length > 5 ? `<p><em>... and ${data.errors.length - 5} more</em></p>` : ''}
+                </div>
+            `;
+        }
+    } else {
+        html = `
+            <div class="mb-4">
+                <i class="fas fa-times-circle fa-3x text-danger mb-3"></i>
+                <h4 class="text-danger">Import Failed</h4>
+            </div>
+            <div class="alert alert-danger">
+                <h6>Errors occurred during import:</h6>
+                <ul class="mb-0">
+                    ${data.errors.map(error => `<li>${error}</li>`).join('')}
+                </ul>
+            </div>
+        `;
+    }
+    
+    resultsContainer.innerHTML = html;
+}
+
+function updateStep(stepNumber) {
+    // Hide all steps
+    document.getElementById('uploadStep').style.display = 'none';
+    document.getElementById('validationStep').style.display = 'none';
+    document.getElementById('importStep').style.display = 'none';
+    
+    // Update step indicators
+    for (let i = 1; i <= 3; i++) {
+        const step = document.getElementById(`step${i}`);
+        const circle = step.querySelector('.step-circle');
+        
+        if (i <= stepNumber) {
+            circle.classList.remove('bg-secondary');
+            circle.classList.add('bg-primary', 'text-white');
+        } else {
+            circle.classList.remove('bg-primary', 'text-white');
+            circle.classList.add('bg-secondary');
+        }
+    }
+    
+    // Show current step
+    if (stepNumber === 1) {
+        document.getElementById('uploadStep').style.display = 'block';
+    } else if (stepNumber === 2) {
+        document.getElementById('validationStep').style.display = 'block';
+    } else if (stepNumber === 3) {
+        document.getElementById('importStep').style.display = 'block';
+    }
+}
+
+function goBackToUpload() {
+    updateStep(1);
+}
+
+function showLoading(message) {
+    // Add loading overlay or spinner
+    console.log('Loading:', message);
+}
+
+function hideLoading() {
+    // Remove loading overlay or spinner
+    console.log('Loading complete');
+}
+</script>
+
+<style>
+.upload-area {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.upload-area:hover {
+    background-color: var(--bs-light) !important;
+    border-color: var(--bs-primary) !important;
+}
+
+.step {
+    text-align: center;
+    flex: 1;
+}
+
+.step-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin: 0 auto 8px;
+}
+
+.step-line {
+    height: 2px;
+    background-color: var(--bs-secondary);
+    flex: 1;
+    margin: 20px 16px 0;
+}
+
+.step-label {
+    font-size: 0.9rem;
+    color: var(--bs-secondary);
+}
+</style>
+{% endblock %}

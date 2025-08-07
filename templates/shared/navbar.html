@@ -1,0 +1,155 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+    <div class="container">
+        <!-- Brand -->
+        <a class="navbar-brand fw-bold" href="{{ url_for('index') }}">
+            <i class="fas fa-graduation-cap me-2"></i>
+            Coaching App
+        </a>
+        
+        <!-- Mobile Toggle -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarNav">
+            {% if session.get('user_id') %}
+                {% set user_role = session.get('user_role') %}
+                
+                <!-- Navigation Links based on role -->
+                <ul class="navbar-nav me-auto">
+                    {% if user_role == 'student' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('students.home') }}">
+                                <i class="fas fa-home me-1"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('students.practice') }}">
+                                <i class="fas fa-brain me-1"></i>Practice
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('students.review') }}">
+                                <i class="fas fa-history me-1"></i>Review
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('students.progress') }}">
+                                <i class="fas fa-chart-line me-1"></i>Progress
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('students.lectures') }}">
+                                <i class="fas fa-video me-1"></i>Lectures
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link position-relative" href="{{ url_for('students.doubts') }}">
+                                <i class="fas fa-question-circle me-1"></i>Doubts
+                                <!-- Doubt notification badge would go here -->
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('students.bookmarks') }}">
+                                <i class="fas fa-bookmark me-1"></i>Bookmarks
+                            </a>
+                        </li>
+                    
+                    {% elif user_role == 'operator' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('operator_dashboard') }}">
+                                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-question me-1"></i>Questions
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ url_for('operator_add_question') }}">Add Question</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('operator_bulk_upload') }}">Bulk Upload</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('operator_question_bank') }}">Question Bank</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('operator_qc') }}">Quality Control</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('operator_lectures') }}">
+                                <i class="fas fa-video me-1"></i>Lectures
+                            </a>
+                        </li>
+                    
+                    {% elif user_role == 'mentor' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('mentor.insights') }}">
+                                <i class="fas fa-chart-bar me-1"></i>Insights
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('mentor.students') }}">
+                                <i class="fas fa-users me-1"></i>Students
+                            </a>
+                        </li>
+                    
+                    {% elif user_role == 'admin' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('admin_overview') }}">
+                                <i class="fas fa-crown me-1"></i>Admin
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin_app" target="_blank">
+                                <i class="fas fa-analytics me-1"></i>Analytics
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+                
+                <!-- User Menu -->
+                <ul class="navbar-nav">
+                    <!-- Gamification (for students) -->
+                    {% if user_role == 'student' %}
+                        <li class="nav-item d-flex align-items-center me-3">
+                            <span class="badge bg-warning text-dark me-2">
+                                <i class="fas fa-fire"></i> <span id="streak-count">0</span>
+                            </span>
+                            <span class="badge bg-info">
+                                <i class="fas fa-star"></i> <span id="points-count">0</span>
+                            </span>
+                        </li>
+                    {% endif %}
+                    
+                    <!-- User Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle me-1"></i>
+                            {{ session.get('user_name', 'User') }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><h6 class="dropdown-header">{{ session.get('user_email', '') }}</h6></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><span class="dropdown-item-text small">Role: {{ user_role.title() }}</span></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <!-- <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Settings</a></li> -->
+                            <li>
+                                <form method="POST" action="{{ url_for('auth.logout') }}" class="d-inline">
+                                    <button type="submit" class="dropdown-item text-danger">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            {% else %}
+                <!-- Not logged in -->
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.login') }}">
+                            <i class="fas fa-sign-in-alt me-1"></i>Login
+                        </a>
+                    </li>
+                </ul>
+            {% endif %}
+        </div>
+    </div>
+</nav>

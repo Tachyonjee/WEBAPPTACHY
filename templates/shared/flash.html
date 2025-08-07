@@ -1,0 +1,112 @@
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="container mt-3">
+            {% for category, message in messages %}
+                {% set alert_class = {
+                    'message': 'info',
+                    'success': 'success',
+                    'error': 'danger',
+                    'warning': 'warning',
+                    'info': 'info'
+                }.get(category, 'info') %}
+                
+                <div class="alert alert-{{ alert_class }} alert-dismissible fade show" role="alert">
+                    {% if category == 'success' %}
+                        <i class="fas fa-check-circle me-2"></i>
+                    {% elif category == 'error' %}
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                    {% elif category == 'warning' %}
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                    {% else %}
+                        <i class="fas fa-info-circle me-2"></i>
+                    {% endif %}
+                    
+                    {{ message }}
+                    
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+
+<!-- Toast Container for JavaScript notifications -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1080;">
+    <!-- Dynamic toasts will be inserted here -->
+</div>
+
+<!-- JavaScript for Toast Notifications -->
+<script>
+// Function to show toast notifications
+function showToast(message, type = 'info', duration = 5000) {
+    const toastContainer = document.querySelector('.toast-container');
+    
+    const icons = {
+        'success': 'fas fa-check-circle',
+        'error': 'fas fa-exclamation-triangle',
+        'warning': 'fas fa-exclamation-circle',
+        'info': 'fas fa-info-circle'
+    };
+    
+    const bgClasses = {
+        'success': 'bg-success',
+        'error': 'bg-danger',
+        'warning': 'bg-warning',
+        'info': 'bg-info'
+    };
+    
+    const toastHtml = `
+        <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="${duration}">
+            <div class="toast-header ${bgClasses[type]} text-white">
+                <i class="${icons[type]} me-2"></i>
+                <strong class="me-auto">Coaching App</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body">
+                ${message}
+            </div>
+        </div>
+    `;
+    
+    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+    
+    const toastElement = toastContainer.lastElementChild;
+    const toast = new bootstrap.Toast(toastElement);
+    toast.show();
+    
+    // Remove toast element after it's hidden
+    toastElement.addEventListener('hidden.bs.toast', () => {
+        toastElement.remove();
+    });
+}
+
+// Global error handler for AJAX requests
+function handleAjaxError(xhr, status, error) {
+    let message = 'An error occurred. Please try again.';
+    
+    if (xhr.responseJSON && xhr.responseJSON.error) {
+        message = xhr.responseJSON.error;
+    } else if (xhr.status === 401) {
+        message = 'Session expired. Please login again.';
+        setTimeout(() => {
+            window.location.href = '/api/auth/login';
+        }, 2000);
+    } else if (xhr.status === 403) {
+        message = 'Access denied. You don\'t have permission for this action.';
+    } else if (xhr.status >= 500) {
+        message = 'Server error. Please try again later.';
+    }
+    
+    showToast(message, 'error');
+}
+
+// Global success handler for AJAX requests
+function handleAjaxSuccess(data, showSuccessToast = true) {
+    if (data.success && data.message && showSuccessToast) {
+        showToast(data.message, 'success');
+    }
+    
+    return data;
+}
+</script>

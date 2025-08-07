@@ -1,0 +1,627 @@
+{% extends "shared/layout.html" %}
+
+{% block title %}Quality Control - Coaching App{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h2 mb-4">
+                <i class="fas fa-shield-alt me-2"></i>
+                Quality Control
+            </h1>
+        </div>
+    </div>
+    
+    <!-- QC Dashboard Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body text-center">
+                    <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                    <h3 id="flaggedQuestions">0</h3>
+                    <p class="mb-0">Flagged Questions</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-line fa-2x mb-2"></i>
+                    <h3 id="lowAccuracyQuestions">0</h3>
+                    <p class="mb-0">Low Accuracy (&lt;30%)</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-clock fa-2x mb-2"></i>
+                    <h3 id="newQuestions">0</h3>
+                    <p class="mb-0">New Questions (7 days)</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-check-circle fa-2x mb-2"></i>
+                    <h3 id="qualityQuestions">0</h3>
+                    <p class="mb-0">High Quality (&gt;80%)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tabs for different QC categories -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <ul class="nav nav-tabs" id="qcTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="flagged-tab" data-bs-toggle="tab" data-bs-target="#flagged" type="button" role="tab">
+                        <i class="fas fa-flag me-1"></i>
+                        Flagged Questions
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="low-accuracy-tab" data-bs-toggle="tab" data-bs-target="#low-accuracy" type="button" role="tab">
+                        <i class="fas fa-chart-line me-1"></i>
+                        Low Accuracy
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="new-questions-tab" data-bs-toggle="tab" data-bs-target="#new-questions" type="button" role="tab">
+                        <i class="fas fa-clock me-1"></i>
+                        Recent Questions
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="analytics-tab" data-bs-toggle="tab" data-bs-target="#analytics" type="button" role="tab">
+                        <i class="fas fa-chart-bar me-1"></i>
+                        Analytics
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="tab-content" id="qcTabsContent">
+                <!-- Flagged Questions Tab -->
+                <div class="tab-pane fade show active" id="flagged" role="tabpanel">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Questions Requiring Attention</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="flaggedQuestionsContent">
+                                <div class="text-center py-4">
+                                    <div class="spinner-border" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="mt-2">Loading flagged questions...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Low Accuracy Tab -->
+                <div class="tab-pane fade" id="low-accuracy" role="tabpanel">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Questions with Low Accuracy Rates</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="lowAccuracyContent">
+                                <!-- Content will be loaded dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- New Questions Tab -->
+                <div class="tab-pane fade" id="new-questions" role="tabpanel">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Recently Added Questions</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="newQuestionsContent">
+                                <!-- Content will be loaded dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Analytics Tab -->
+                <div class="tab-pane fade" id="analytics" role="tabpanel">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Quality Analytics</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <h6>Difficulty Distribution</h6>
+                                    <canvas id="difficultyChart" height="200"></canvas>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <h6>Subject Distribution</h6>
+                                    <canvas id="subjectChart" height="200"></canvas>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <h6>Accuracy Trends</h6>
+                                    <canvas id="accuracyTrendChart" height="100"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Question Review Modal -->
+<div class="modal fade" id="reviewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Review Question</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="reviewContent">
+                    <!-- Question content for review -->
+                </div>
+                <hr>
+                <div class="mb-3">
+                    <label for="reviewNotes" class="form-label">Review Notes</label>
+                    <textarea class="form-control" id="reviewNotes" rows="3" 
+                              placeholder="Add your review comments..."></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="qualityRating" class="form-label">Quality Rating</label>
+                    <select class="form-select" id="qualityRating">
+                        <option value="">Select Rating</option>
+                        <option value="5">Excellent (5/5)</option>
+                        <option value="4">Good (4/5)</option>
+                        <option value="3">Average (3/5)</option>
+                        <option value="2">Below Average (2/5)</option>
+                        <option value="1">Poor (1/5)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning" id="flagQuestionBtn">
+                    <i class="fas fa-flag me-1"></i>
+                    Flag for Revision
+                </button>
+                <button type="button" class="btn btn-success" id="approveQuestionBtn">
+                    <i class="fas fa-check me-1"></i>
+                    Approve Question
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentQuestionId = null;
+
+// Tab switching event handlers
+document.addEventListener('DOMContentLoaded', function() {
+    const tabs = document.querySelectorAll('#qcTabs button[data-bs-toggle="tab"]');
+    tabs.forEach(tab => {
+        tab.addEventListener('shown.bs.tab', function(e) {
+            const target = e.target.getAttribute('data-bs-target');
+            loadTabContent(target);
+        });
+    });
+    
+    // Load initial content
+    loadTabContent('#flagged');
+    loadQCStatistics();
+});
+
+async function loadTabContent(tabId) {
+    switch(tabId) {
+        case '#flagged':
+            await loadFlaggedQuestions();
+            break;
+        case '#low-accuracy':
+            await loadLowAccuracyQuestions();
+            break;
+        case '#new-questions':
+            await loadNewQuestions();
+            break;
+        case '#analytics':
+            await loadAnalytics();
+            break;
+    }
+}
+
+async function loadQCStatistics() {
+    try {
+        const response = await fetch('/api/admin/content-health', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            document.getElementById('lowAccuracyQuestions').textContent = data.bad_questions?.length || 0;
+            
+            // Calculate other statistics from the data
+            const difficultyData = data.difficulty_distribution || [];
+            const totalQuestions = difficultyData.reduce((sum, item) => sum + item.count, 0);
+            document.getElementById('newQuestions').textContent = totalQuestions;
+        }
+    } catch (error) {
+        console.error('Failed to load QC statistics:', error);
+    }
+}
+
+async function loadFlaggedQuestions() {
+    try {
+        const response = await fetch('/api/admin/content-health', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.bad_questions) {
+            displayQuestionsList(data.bad_questions, 'flaggedQuestionsContent', 'flagged');
+        } else {
+            document.getElementById('flaggedQuestionsContent').innerHTML = `
+                <div class="text-center py-4">
+                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                    <h5>No Flagged Questions</h5>
+                    <p class="text-muted">All questions are within quality standards.</p>
+                </div>
+            `;
+        }
+    } catch (error) {
+        document.getElementById('flaggedQuestionsContent').innerHTML = `
+            <div class="text-center py-4">
+                <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                <h5>Error Loading Data</h5>
+                <p class="text-muted">Failed to load flagged questions.</p>
+            </div>
+        `;
+    }
+}
+
+async function loadLowAccuracyQuestions() {
+    const loadingHtml = `
+        <div class="text-center py-4">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading low accuracy questions...</p>
+        </div>
+    `;
+    document.getElementById('lowAccuracyContent').innerHTML = loadingHtml;
+    
+    try {
+        const response = await fetch('/api/admin/content-health', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.bad_questions) {
+            displayQuestionsList(data.bad_questions, 'lowAccuracyContent', 'accuracy');
+        } else {
+            document.getElementById('lowAccuracyContent').innerHTML = `
+                <div class="text-center py-4">
+                    <i class="fas fa-thumbs-up fa-3x text-success mb-3"></i>
+                    <h5>No Low Accuracy Questions</h5>
+                    <p class="text-muted">All questions have acceptable accuracy rates.</p>
+                </div>
+            `;
+        }
+    } catch (error) {
+        document.getElementById('lowAccuracyContent').innerHTML = `
+            <div class="text-center py-4">
+                <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                <h5>Error Loading Data</h5>
+                <p class="text-muted">Failed to load accuracy data.</p>
+            </div>
+        `;
+    }
+}
+
+async function loadNewQuestions() {
+    const loadingHtml = `
+        <div class="text-center py-4">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading recent questions...</p>
+        </div>
+    `;
+    document.getElementById('newQuestionsContent').innerHTML = loadingHtml;
+    
+    try {
+        // This would typically load questions from the last 7 days
+        const response = await fetch('/api/questions/?per_page=20', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.questions) {
+            const recentQuestions = data.questions.map(q => ({
+                id: q.id,
+                subject: q.subject,
+                chapter: q.chapter,
+                topic: q.topic,
+                difficulty: q.difficulty,
+                accuracy: q.accuracy_rate,
+                attempt_count: 0 // This would come from the API
+            }));
+            
+            displayQuestionsList(recentQuestions, 'newQuestionsContent', 'new');
+        } else {
+            document.getElementById('newQuestionsContent').innerHTML = `
+                <div class="text-center py-4">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <h5>No Recent Questions</h5>
+                    <p class="text-muted">No new questions added recently.</p>
+                </div>
+            `;
+        }
+    } catch (error) {
+        document.getElementById('newQuestionsContent').innerHTML = `
+            <div class="text-center py-4">
+                <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                <h5>Error Loading Data</h5>
+                <p class="text-muted">Failed to load recent questions.</p>
+            </div>
+        `;
+    }
+}
+
+function displayQuestionsList(questions, containerId, type) {
+    const container = document.getElementById(containerId);
+    
+    if (!questions || questions.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-4">
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <h5>No Questions Found</h5>
+                <p class="text-muted">No questions match the current criteria.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = '<div class="table-responsive"><table class="table table-hover"><thead class="table-dark"><tr>';
+    html += '<th>ID</th><th>Subject</th><th>Topic</th><th>Difficulty</th>';
+    
+    if (type === 'accuracy' || type === 'flagged') {
+        html += '<th>Accuracy</th><th>Attempts</th>';
+    }
+    
+    html += '<th>Actions</th></tr></thead><tbody>';
+    
+    questions.forEach(question => {
+        html += `
+            <tr>
+                <td>${question.id}</td>
+                <td><span class="badge bg-secondary">${question.subject}</span></td>
+                <td>${question.topic}</td>
+                <td><span class="badge bg-info">Level ${question.difficulty}</span></td>
+        `;
+        
+        if (type === 'accuracy' || type === 'flagged') {
+            const accuracyBadge = question.accuracy < 30 ? 'bg-danger' : 
+                                 question.accuracy < 50 ? 'bg-warning' : 'bg-success';
+            html += `
+                <td><span class="badge ${accuracyBadge}">${question.accuracy}%</span></td>
+                <td>${question.attempt_count}</td>
+            `;
+        }
+        
+        html += `
+                <td>
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn btn-outline-primary" onclick="reviewQuestion(${question.id})">
+                            <i class="fas fa-eye"></i> Review
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="editQuestion(${question.id})">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+    
+    html += '</tbody></table></div>';
+    container.innerHTML = html;
+}
+
+async function reviewQuestion(questionId) {
+    currentQuestionId = questionId;
+    
+    try {
+        const response = await fetch(`/api/questions/${questionId}`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+            }
+        });
+        
+        const question = await response.json();
+        
+        if (response.ok) {
+            displayQuestionInReview(question);
+            const modal = new bootstrap.Modal(document.getElementById('reviewModal'));
+            modal.show();
+        } else {
+            showFlash('Failed to load question for review', 'error');
+        }
+    } catch (error) {
+        showFlash('Error loading question', 'error');
+    }
+}
+
+function displayQuestionInReview(question) {
+    let html = `
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="badge bg-secondary me-2">${question.subject}</span>
+                    <span class="badge bg-info me-2">Level ${question.difficulty}</span>
+                    <span class="badge bg-warning">${question.accuracy_rate}% accuracy</span>
+                </div>
+                <span class="text-muted">ID: ${question.id}</span>
+            </div>
+            <div class="card-body">
+                <h6 class="text-muted">${question.chapter} - ${question.topic}</h6>
+                <h5 class="card-title mt-3">${question.question_text}</h5>
+    `;
+    
+    if (question.options && question.options.length > 0) {
+        html += '<div class="mt-3"><h6>Options:</h6>';
+        question.options.forEach((option, index) => {
+            const isCorrect = option === question.correct_answer;
+            html += `
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" disabled ${isCorrect ? 'checked' : ''}>
+                    <label class="form-check-label ${isCorrect ? 'fw-bold text-success' : ''}">
+                        <strong>${String.fromCharCode(65 + index)}.</strong> ${option}
+                        ${isCorrect ? '<i class="fas fa-check ms-2 text-success"></i>' : ''}
+                    </label>
+                </div>
+            `;
+        });
+        html += '</div>';
+    }
+    
+    html += '</div></div>';
+    
+    document.getElementById('reviewContent').innerHTML = html;
+}
+
+function editQuestion(questionId) {
+    window.location.href = `/operator/questions/edit/${questionId}`;
+}
+
+async function loadAnalytics() {
+    try {
+        const response = await fetch('/api/admin/content-health', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            createCharts(data);
+        }
+    } catch (error) {
+        console.error('Failed to load analytics:', error);
+    }
+}
+
+function createCharts(data) {
+    // Difficulty Distribution Chart
+    if (data.difficulty_distribution) {
+        const diffCtx = document.getElementById('difficultyChart').getContext('2d');
+        new Chart(diffCtx, {
+            type: 'doughnut',
+            data: {
+                labels: data.difficulty_distribution.map(d => `Level ${d.difficulty}`),
+                datasets: [{
+                    data: data.difficulty_distribution.map(d => d.count),
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: { color: '#fff' }
+                    }
+                }
+            }
+        });
+    }
+    
+    // Subject Distribution Chart
+    if (data.subject_distribution) {
+        const subjCtx = document.getElementById('subjectChart').getContext('2d');
+        new Chart(subjCtx, {
+            type: 'bar',
+            data: {
+                labels: data.subject_distribution.map(s => s.subject),
+                datasets: [{
+                    label: 'Questions',
+                    data: data.subject_distribution.map(s => s.count),
+                    backgroundColor: '#36A2EB'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: { color: '#fff' }
+                    }
+                },
+                scales: {
+                    x: { ticks: { color: '#6c757d' } },
+                    y: { ticks: { color: '#6c757d' } }
+                }
+            }
+        });
+    }
+}
+
+// Review modal actions
+document.getElementById('approveQuestionBtn').addEventListener('click', async function() {
+    if (!currentQuestionId) return;
+    
+    const notes = document.getElementById('reviewNotes').value;
+    const rating = document.getElementById('qualityRating').value;
+    
+    // This would typically send the review data to the backend
+    showFlash('Question approved successfully', 'success');
+    bootstrap.Modal.getInstance(document.getElementById('reviewModal')).hide();
+});
+
+document.getElementById('flagQuestionBtn').addEventListener('click', async function() {
+    if (!currentQuestionId) return;
+    
+    const notes = document.getElementById('reviewNotes').value;
+    
+    if (!notes.trim()) {
+        showFlash('Please add review notes when flagging a question', 'error');
+        return;
+    }
+    
+    // This would typically flag the question in the backend
+    showFlash('Question flagged for revision', 'warning');
+    bootstrap.Modal.getInstance(document.getElementById('reviewModal')).hide();
+});
+</script>
+{% endblock %}

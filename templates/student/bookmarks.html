@@ -1,0 +1,569 @@
+{% extends "shared/layout.html" %}
+
+{% block title %}Bookmarks - Coaching App{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <h3><i class="fas fa-bookmark me-2"></i>Your Bookmarked Questions</h3>
+        <p class="text-muted">Quick access to questions you want to revisit</p>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Filters -->
+    <div class="col-md-3 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-filter me-2"></i>Filter Bookmarks
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Subject</label>
+                    <select class="form-select" id="subjectFilter">
+                        <option value="">All Subjects</option>
+                        <option value="Physics">Physics</option>
+                        <option value="Chemistry">Chemistry</option>
+                        <option value="Mathematics">Mathematics</option>
+                        {% if student.goal_exam == 'NEET' %}
+                        <option value="Biology">Biology</option>
+                        {% endif %}
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Chapter</label>
+                    <select class="form-select" id="chapterFilter">
+                        <option value="">All Chapters</option>
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Topic</label>
+                    <select class="form-select" id="topicFilter">
+                        <option value="">All Topics</option>
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Difficulty</label>
+                    <select class="form-select" id="difficultyFilter">
+                        <option value="">All Levels</option>
+                        <option value="1">Level 1 (Easy)</option>
+                        <option value="2">Level 2</option>
+                        <option value="3">Level 3 (Medium)</option>
+                        <option value="4">Level 4</option>
+                        <option value="5">Level 5 (Hard)</option>
+                    </select>
+                </div>
+                
+                <button type="button" class="btn btn-primary w-100" onclick="applyFilters()">
+                    <i class="fas fa-search me-2"></i>Apply Filters
+                </button>
+                
+                <button type="button" class="btn btn-outline-secondary w-100 mt-2" onclick="clearFilters()">
+                    <i class="fas fa-times me-2"></i>Clear Filters
+                </button>
+            </div>
+        </div>
+        
+        <!-- Bookmark Stats -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>Bookmark Stats
+                </h6>
+            </div>
+            <div class="card-body text-center">
+                <h4 class="text-primary">{{ bookmarked_questions|length }}</h4>
+                <p class="text-muted mb-0">Total Bookmarks</p>
+                
+                {% if bookmarked_questions %}
+                <hr>
+                <div class="row">
+                    {% set subjects = bookmarked_questions | map(attribute='1.subject') | list %}
+                    {% for subject in subjects | unique %}
+                    <div class="col-6 mb-2">
+                        <small class="text-muted">{{ subject }}</small>
+                        <div class="fw-bold">{{ subjects | selectattr('1.subject', 'equalto', subject) | list | length }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bookmarked Questions -->
+    <div class="col-md-9">
+        {% if bookmarked_questions %}
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-muted">{{ bookmarked_questions|length }} questions bookmarked</span>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="practiceBookmarked()">
+                        <i class="fas fa-brain me-1"></i>Practice All
+                    </button>
+                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="clearAllBookmarks()">
+                        <i class="fas fa-trash me-1"></i>Clear All
+                    </button>
+                </div>
+            </div>
+            
+            <div id="bookmarksContainer">
+                {% for bookmark, question in bookmarked_questions %}
+                <div class="card mb-3 bookmark-card" 
+                     data-subject="{{ question.subject }}" 
+                     data-chapter="{{ question.chapter }}"
+                     data-topic="{{ question.topic }}"
+                     data-difficulty="{{ question.difficulty }}">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <!-- Question Info -->
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="badge bg-primary me-2">{{ question.subject }}</span>
+                                    <span class="badge bg-secondary me-2">{{ question.chapter }}</span>
+                                    <span class="badge bg-info me-2">{{ question.topic }}</span>
+                                    <span class="badge bg-warning text-dark">Level {{ question.difficulty }}</span>
+                                </div>
+                                
+                                <!-- Question Text -->
+                                <p class="card-text">
+                                    {{ question.question_text[:250] }}{% if question.question_text|length > 250 %}...{% endif %}
+                                </p>
+                                
+                                <!-- Bookmark Date -->
+                                <div class="text-muted small">
+                                    <i class="fas fa-clock me-1"></i>
+                                    Bookmarked on {{ bookmark.created_at.strftime('%d %b %Y, %I:%M %p') }}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4 text-md-end">
+                                <!-- Actions -->
+                                <div class="d-grid gap-2 d-md-block">
+                                    <button type="button" class="btn btn-primary btn-sm" 
+                                            onclick="practiceQuestion({{ question.id }})">
+                                        <i class="fas fa-brain me-1"></i>Practice
+                                    </button>
+                                    
+                                    <button type="button" class="btn btn-outline-info btn-sm" 
+                                            onclick="viewQuestion({{ question.id }})">
+                                        <i class="fas fa-eye me-1"></i>View
+                                    </button>
+                                    
+                                    <button type="button" class="btn btn-outline-success btn-sm" 
+                                            onclick="getSolution({{ question.id }})">
+                                        <i class="fas fa-lightbulb me-1"></i>Solution
+                                    </button>
+                                    
+                                    <button type="button" class="btn btn-outline-danger btn-sm" 
+                                            onclick="removeBookmark({{ question.id }}, {{ bookmark.id }})">
+                                        <i class="fas fa-bookmark-minus me-1"></i>Remove
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Quick Preview (collapsible) -->
+                        <div class="mt-3">
+                            <button class="btn btn-link btn-sm p-0" type="button" 
+                                    data-bs-toggle="collapse" 
+                                    data-bs-target="#preview{{ bookmark.id }}">
+                                <i class="fas fa-chevron-down me-1"></i>Quick Preview
+                            </button>
+                            
+                            <div class="collapse mt-2" id="preview{{ bookmark.id }}">
+                                <div class="p-3 bg-dark rounded">
+                                    <div class="question-preview">
+                                        <h6>Complete Question:</h6>
+                                        <p>{{ question.question_text }}</p>
+                                        
+                                        {% if question.options %}
+                                        <h6>Options:</h6>
+                                        <div class="row">
+                                            {% for key, value in question.get_options_dict().items() %}
+                                            <div class="col-md-6 mb-1">
+                                                <span class="badge {% if key == question.correct_answer %}bg-success{% else %}bg-secondary{% endif %} me-2">{{ key }}</span>
+                                                {{ value }}
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                        
+                                        <div class="mt-2">
+                                            <strong class="text-success">Correct Answer: {{ question.correct_answer }}</strong>
+                                        </div>
+                                        
+                                        {% if question.hint %}
+                                        <div class="mt-2">
+                                            <strong class="text-info">Hint:</strong> {{ question.hint }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-bookmark fa-4x text-muted mb-3"></i>
+                    <h5>No Bookmarks Yet</h5>
+                    <p class="text-muted mb-4">Bookmark questions while practicing to save them for later review</p>
+                    <a href="{{ url_for('students.practice') }}" class="btn btn-primary">
+                        <i class="fas fa-brain me-2"></i>Start Practice
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Question Detail Modal -->
+<div class="modal fade" id="questionModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Question Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="questionModalBody">
+                <!-- Question details will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="practiceCurrentQuestion()">
+                    <i class="fas fa-brain me-2"></i>Practice This Question
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Solution Modal -->
+<div class="modal fade" id="solutionModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Solution</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="solutionModalBody">
+                <!-- Solution will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let currentQuestionId = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Load chapters for subject filter
+    document.getElementById('subjectFilter').addEventListener('change', loadChapters);
+    document.getElementById('chapterFilter').addEventListener('change', loadTopics);
+});
+
+function loadChapters() {
+    const subject = document.getElementById('subjectFilter').value;
+    const chapterSelect = document.getElementById('chapterFilter');
+    const topicSelect = document.getElementById('topicFilter');
+    
+    // Clear existing options
+    chapterSelect.innerHTML = '<option value="">All Chapters</option>';
+    topicSelect.innerHTML = '<option value="">All Topics</option>';
+    
+    if (!subject) return;
+    
+    fetch(`/api/questions/chapters?subject=${subject}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                data.chapters.forEach(chapter => {
+                    const option = document.createElement('option');
+                    option.value = chapter;
+                    option.textContent = chapter;
+                    chapterSelect.appendChild(option);
+                });
+            }
+        })
+        .catch(error => console.error('Error loading chapters:', error));
+}
+
+function loadTopics() {
+    const subject = document.getElementById('subjectFilter').value;
+    const chapter = document.getElementById('chapterFilter').value;
+    const topicSelect = document.getElementById('topicFilter');
+    
+    topicSelect.innerHTML = '<option value="">All Topics</option>';
+    
+    if (!subject) return;
+    
+    let url = `/api/questions/topics?subject=${subject}`;
+    if (chapter) url += `&chapter=${chapter}`;
+    
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                data.topics.forEach(topic => {
+                    const option = document.createElement('option');
+                    option.value = topic;
+                    option.textContent = topic;
+                    topicSelect.appendChild(option);
+                });
+            }
+        })
+        .catch(error => console.error('Error loading topics:', error));
+}
+
+function applyFilters() {
+    const filters = {
+        subject: document.getElementById('subjectFilter').value,
+        chapter: document.getElementById('chapterFilter').value,
+        topic: document.getElementById('topicFilter').value,
+        difficulty: document.getElementById('difficultyFilter').value
+    };
+    
+    const cards = document.querySelectorAll('.bookmark-card');
+    let visibleCount = 0;
+    
+    cards.forEach(card => {
+        let show = true;
+        
+        if (filters.subject && card.dataset.subject !== filters.subject) show = false;
+        if (filters.chapter && card.dataset.chapter !== filters.chapter) show = false;
+        if (filters.topic && card.dataset.topic !== filters.topic) show = false;
+        if (filters.difficulty && card.dataset.difficulty !== filters.difficulty) show = false;
+        
+        card.style.display = show ? 'block' : 'none';
+        if (show) visibleCount++;
+    });
+    
+    showToast(`Showing ${visibleCount} bookmarked questions`, 'info');
+}
+
+function clearFilters() {
+    document.getElementById('subjectFilter').value = '';
+    document.getElementById('chapterFilter').value = '';
+    document.getElementById('topicFilter').value = '';
+    document.getElementById('difficultyFilter').value = '';
+    
+    document.querySelectorAll('.bookmark-card').forEach(card => {
+        card.style.display = 'block';
+    });
+    
+    // Clear dependent dropdowns
+    document.getElementById('chapterFilter').innerHTML = '<option value="">All Chapters</option>';
+    document.getElementById('topicFilter').innerHTML = '<option value="">All Topics</option>';
+}
+
+function practiceQuestion(questionId) {
+    // Redirect to practice with specific question
+    window.location.href = `/student/practice?question_id=${questionId}`;
+}
+
+function practiceBookmarked() {
+    // Get visible bookmark question IDs
+    const visibleCards = document.querySelectorAll('.bookmark-card:not([style*="display: none"])');
+    
+    if (visibleCards.length === 0) {
+        showToast('No bookmarked questions to practice', 'warning');
+        return;
+    }
+    
+    // Start practice session with bookmarked questions
+    window.location.href = '/student/practice?mode=bookmarks';
+}
+
+function viewQuestion(questionId) {
+    currentQuestionId = questionId;
+    
+    fetch(`/api/questions/${questionId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayQuestionDetails(data.question);
+            } else {
+                showToast(data.error || 'Failed to load question details', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error loading question:', error);
+            showToast('Failed to load question details', 'error');
+        });
+}
+
+function displayQuestionDetails(question) {
+    let html = `
+        <div class="question-details">
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                <span class="badge bg-primary">${question.subject}</span>
+                <span class="badge bg-secondary">${question.chapter}</span>
+                <span class="badge bg-info">${question.topic}</span>
+                <span class="badge bg-warning text-dark">Level ${question.difficulty}</span>
+            </div>
+            
+            <div class="question-text mb-4">
+                <h6>Question:</h6>
+                <p>${question.question_text}</p>
+            </div>
+    `;
+    
+    if (question.options) {
+        html += '<div class="options mb-4"><h6>Options:</h6><div class="row">';
+        Object.entries(question.options).forEach(([key, value]) => {
+            const isCorrect = key === question.correct_answer;
+            const badgeClass = isCorrect ? 'bg-success' : 'bg-secondary';
+            
+            html += `
+                <div class="col-md-6 mb-2">
+                    <span class="badge ${badgeClass} me-2">${key}</span>
+                    ${value}
+                </div>
+            `;
+        });
+        html += '</div></div>';
+    }
+    
+    html += `
+            <div class="answer mb-3">
+                <h6>Correct Answer:</h6>
+                <span class="badge bg-success fs-6">${question.correct_answer}</span>
+            </div>
+    `;
+    
+    if (question.hint) {
+        html += `
+            <div class="hint">
+                <h6>Hint:</h6>
+                <div class="alert alert-info">${question.hint}</div>
+            </div>
+        `;
+    }
+    
+    html += '</div>';
+    
+    document.getElementById('questionModalBody').innerHTML = html;
+    new bootstrap.Modal(document.getElementById('questionModal')).show();
+}
+
+function getSolution(questionId) {
+    fetch(`/api/questions/${questionId}/solution`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displaySolution(data.solution);
+            } else {
+                showToast(data.error || 'Solution not available', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error loading solution:', error);
+            showToast('Failed to load solution', 'error');
+        });
+}
+
+function displaySolution(solution) {
+    let html = '<div class="solution-content">';
+    
+    if (solution.solution && solution.solution.step_by_step_solution) {
+        html += '<h6 class="mb-3">Step-by-Step Solution:</h6>';
+        
+        solution.solution.step_by_step_solution.forEach((step, index) => {
+            html += `
+                <div class="step mb-3 p-3 border rounded">
+                    <h6 class="text-primary">Step ${step.step}: ${step.description}</h6>
+                    <p class="mb-0">${step.explanation}</p>
+                </div>
+            `;
+        });
+        
+        if (solution.solution.key_concepts && solution.solution.key_concepts.length > 0) {
+            html += '<div class="mt-4"><h6>Key Concepts:</h6>';
+            solution.solution.key_concepts.forEach(concept => {
+                html += `<span class="badge bg-info me-2 mb-2">${concept}</span>`;
+            });
+            html += '</div>';
+        }
+    } else {
+        html += '<p class="text-muted">Detailed solution is not available for this question.</p>';
+    }
+    
+    html += '</div>';
+    
+    document.getElementById('solutionModalBody').innerHTML = html;
+    new bootstrap.Modal(document.getElementById('solutionModal')).show();
+}
+
+function removeBookmark(questionId, bookmarkId) {
+    if (!confirm('Are you sure you want to remove this bookmark?')) return;
+    
+    fetch('/student/api/bookmark', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            question_id: questionId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Remove the card from the page
+            const card = document.querySelector(`[data-question-id="${questionId}"]`);
+            if (card) {
+                card.remove();
+            } else {
+                // Reload page if card selector doesn't work
+                location.reload();
+            }
+            showToast(data.message, 'success');
+        } else {
+            showToast(data.error || 'Failed to remove bookmark', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error removing bookmark:', error);
+        showToast('Failed to remove bookmark', 'error');
+    });
+}
+
+function clearAllBookmarks() {
+    if (!confirm('Are you sure you want to remove ALL bookmarks? This action cannot be undone.')) return;
+    
+    const visibleCards = document.querySelectorAll('.bookmark-card:not([style*="display: none"])');
+    
+    if (visibleCards.length === 0) {
+        showToast('No bookmarks to remove', 'warning');
+        return;
+    }
+    
+    showToast('Removing all bookmarks...', 'info');
+    
+    // This would typically be a batch operation on the backend
+    // For now, show a message
+    setTimeout(() => {
+        showToast('Feature coming soon! Remove bookmarks individually for now.', 'info');
+    }, 1000);
+}
+
+function practiceCurrentQuestion() {
+    if (currentQuestionId) {
+        practiceQuestion(currentQuestionId);
+    }
+}
+</script>
+{% endblock %}

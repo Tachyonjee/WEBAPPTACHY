@@ -1,0 +1,410 @@
+{% extends "shared/layout.html" %}
+
+{% block title %}Add Question - Coaching App{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <h3><i class="fas fa-plus-circle me-2"></i>Add New Question</h3>
+        <p class="text-muted">Create a new question for the question bank</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-body">
+                <form id="questionForm">
+                    <!-- Subject Selection -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="subject" class="form-label">Subject *</label>
+                            <select class="form-select" id="subject" name="subject" required>
+                                <option value="">Select Subject</option>
+                                <option value="Physics">Physics</option>
+                                <option value="Chemistry">Chemistry</option>
+                                <option value="Biology">Biology</option>
+                                <option value="Mathematics">Mathematics</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="difficulty" class="form-label">Difficulty Level *</label>
+                            <select class="form-select" id="difficulty" name="difficulty" required>
+                                <option value="">Select Difficulty</option>
+                                <option value="1">Level 1 (Easy)</option>
+                                <option value="2">Level 2</option>
+                                <option value="3">Level 3 (Medium)</option>
+                                <option value="4">Level 4</option>
+                                <option value="5">Level 5 (Hard)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Chapter and Topic -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="chapter" class="form-label">Chapter *</label>
+                            <input type="text" class="form-control" id="chapter" name="chapter" 
+                                   placeholder="e.g., Mechanics, Organic Chemistry" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="topic" class="form-label">Topic *</label>
+                            <input type="text" class="form-control" id="topic" name="topic" 
+                                   placeholder="e.g., Kinematics, Alkanes" required>
+                        </div>
+                    </div>
+                    
+                    <!-- Question Text -->
+                    <div class="mb-3">
+                        <label for="questionText" class="form-label">Question Text *</label>
+                        <textarea class="form-control" id="questionText" name="question_text" rows="4" 
+                                  placeholder="Enter the complete question..." required></textarea>
+                        <div class="form-text">
+                            You can use mathematical notation and formatting as needed.
+                        </div>
+                    </div>
+                    
+                    <!-- Question Type -->
+                    <div class="mb-3">
+                        <label class="form-label">Question Type</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="questionType" id="mcqType" value="mcq" checked>
+                            <label class="form-check-label" for="mcqType">
+                                Multiple Choice Question (MCQ)
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="questionType" id="subjectiveType" value="subjective">
+                            <label class="form-check-label" for="subjectiveType">
+                                Subjective/Numerical
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- MCQ Options -->
+                    <div id="mcqOptions" class="mb-3">
+                        <label class="form-label">Options *</label>
+                        <div class="row">
+                            <div class="col-md-6 mb-2">
+                                <label for="optionA" class="form-label small">Option A</label>
+                                <input type="text" class="form-control" id="optionA" name="optionA" placeholder="Option A">
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label for="optionB" class="form-label small">Option B</label>
+                                <input type="text" class="form-control" id="optionB" name="optionB" placeholder="Option B">
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label for="optionC" class="form-label small">Option C</label>
+                                <input type="text" class="form-control" id="optionC" name="optionC" placeholder="Option C">
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label for="optionD" class="form-label small">Option D</label>
+                                <input type="text" class="form-control" id="optionD" name="optionD" placeholder="Option D">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Correct Answer -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="correctAnswer" class="form-label">Correct Answer *</label>
+                            <select class="form-select" id="correctAnswerMCQ" name="correct_answer">
+                                <option value="">Select Correct Option</option>
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
+                                <option value="D">D</option>
+                            </select>
+                            <input type="text" class="form-control d-none" id="correctAnswerSubjective" 
+                                   name="correct_answer_text" placeholder="Enter correct answer">
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="source" class="form-label">Source (Optional)</label>
+                            <input type="text" class="form-control" id="source" name="source" 
+                                   placeholder="e.g., NCERT Class 12, Previous Year Paper">
+                        </div>
+                    </div>
+                    
+                    <!-- Hint -->
+                    <div class="mb-3">
+                        <label for="hint" class="form-label">Hint (Optional)</label>
+                        <textarea class="form-control" id="hint" name="hint" rows="2" 
+                                  placeholder="Provide a helpful hint for students..."></textarea>
+                    </div>
+                    
+                    <!-- Preview Section -->
+                    <div class="mb-4">
+                        <h5 class="text-primary">
+                            <i class="fas fa-eye me-2"></i>Question Preview
+                        </h5>
+                        <div class="card bg-dark">
+                            <div class="card-body">
+                                <div id="questionPreview">
+                                    <p class="text-muted">Question preview will appear here as you type...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Form Actions -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <button type="button" class="btn btn-outline-secondary w-100" onclick="resetForm()">
+                                <i class="fas fa-undo me-2"></i>Reset Form
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-save me-2"></i>Save Question
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-success">
+                    <i class="fas fa-check-circle me-2"></i>Question Added Successfully!
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Your question has been added to the question bank successfully.</p>
+                <p class="mb-0">What would you like to do next?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-primary" onclick="addAnother()">
+                    <i class="fas fa-plus me-2"></i>Add Another Question
+                </button>
+                <a href="{{ url_for('operator_question_bank') }}" class="btn btn-primary">
+                    <i class="fas fa-list me-2"></i>View Question Bank
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Question type change handler
+    document.querySelectorAll('input[name="questionType"]').forEach(radio => {
+        radio.addEventListener('change', toggleQuestionType);
+    });
+    
+    // Form input listeners for preview
+    document.getElementById('questionText').addEventListener('input', updatePreview);
+    document.getElementById('optionA').addEventListener('input', updatePreview);
+    document.getElementById('optionB').addEventListener('input', updatePreview);
+    document.getElementById('optionC').addEventListener('input', updatePreview);
+    document.getElementById('optionD').addEventListener('input', updatePreview);
+    document.getElementById('correctAnswerMCQ').addEventListener('change', updatePreview);
+    document.getElementById('correctAnswerSubjective').addEventListener('input', updatePreview);
+    document.getElementById('hint').addEventListener('input', updatePreview);
+    
+    // Form submission
+    document.getElementById('questionForm').addEventListener('submit', handleSubmit);
+    
+    // Initialize preview
+    updatePreview();
+});
+
+function toggleQuestionType() {
+    const selectedType = document.querySelector('input[name="questionType"]:checked').value;
+    const mcqOptions = document.getElementById('mcqOptions');
+    const mcqAnswer = document.getElementById('correctAnswerMCQ');
+    const subjectiveAnswer = document.getElementById('correctAnswerSubjective');
+    
+    if (selectedType === 'mcq') {
+        mcqOptions.classList.remove('d-none');
+        mcqAnswer.classList.remove('d-none');
+        subjectiveAnswer.classList.add('d-none');
+        mcqAnswer.required = true;
+        subjectiveAnswer.required = false;
+    } else {
+        mcqOptions.classList.add('d-none');
+        mcqAnswer.classList.add('d-none');
+        subjectiveAnswer.classList.remove('d-none');
+        mcqAnswer.required = false;
+        subjectiveAnswer.required = true;
+    }
+    
+    updatePreview();
+}
+
+function updatePreview() {
+    const questionText = document.getElementById('questionText').value;
+    const questionType = document.querySelector('input[name="questionType"]:checked').value;
+    const hint = document.getElementById('hint').value;
+    
+    let previewHtml = '';
+    
+    if (questionText) {
+        previewHtml += `<div class="mb-3"><strong>Question:</strong><br>${questionText}</div>`;
+        
+        if (questionType === 'mcq') {
+            const options = {
+                A: document.getElementById('optionA').value,
+                B: document.getElementById('optionB').value,
+                C: document.getElementById('optionC').value,
+                D: document.getElementById('optionD').value
+            };
+            
+            const correctAnswer = document.getElementById('correctAnswerMCQ').value;
+            
+            if (Object.values(options).some(opt => opt.trim())) {
+                previewHtml += '<div class="mb-3"><strong>Options:</strong><br>';
+                Object.entries(options).forEach(([key, value]) => {
+                    if (value.trim()) {
+                        const isCorrect = key === correctAnswer;
+                        const badgeClass = isCorrect ? 'bg-success' : 'bg-secondary';
+                        previewHtml += `<div class="mb-1"><span class="badge ${badgeClass} me-2">${key}</span>${value}</div>`;
+                    }
+                });
+                previewHtml += '</div>';
+            }
+        } else {
+            const correctAnswer = document.getElementById('correctAnswerSubjective').value;
+            if (correctAnswer) {
+                previewHtml += `<div class="mb-3"><strong>Answer:</strong> ${correctAnswer}</div>`;
+            }
+        }
+        
+        if (hint) {
+            previewHtml += `<div class="alert alert-info"><strong>Hint:</strong> ${hint}</div>`;
+        }
+    } else {
+        previewHtml = '<p class="text-muted">Question preview will appear here as you type...</p>';
+    }
+    
+    document.getElementById('questionPreview').innerHTML = previewHtml;
+}
+
+function handleSubmit(event) {
+    event.preventDefault();
+    
+    const formData = new FormData(event.target);
+    const questionType = document.querySelector('input[name="questionType"]:checked').value;
+    
+    // Prepare question data
+    const questionData = {
+        subject: formData.get('subject'),
+        chapter: formData.get('chapter'),
+        topic: formData.get('topic'),
+        difficulty: parseInt(formData.get('difficulty')),
+        question_text: formData.get('question_text'),
+        hint: formData.get('hint'),
+        source: formData.get('source')
+    };
+    
+    if (questionType === 'mcq') {
+        questionData.options = {
+            A: formData.get('optionA'),
+            B: formData.get('optionB'),
+            C: formData.get('optionC'),
+            D: formData.get('optionD')
+        };
+        questionData.correct_answer = formData.get('correct_answer');
+    } else {
+        questionData.correct_answer = formData.get('correct_answer_text');
+    }
+    
+    // Validate required fields
+    if (!questionData.subject || !questionData.chapter || !questionData.topic || 
+        !questionData.difficulty || !questionData.question_text || !questionData.correct_answer) {
+        showToast('Please fill in all required fields', 'warning');
+        return;
+    }
+    
+    // Show loading state
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div>Saving...';
+    submitBtn.disabled = true;
+    
+    // Submit question
+    fetch('/api/questions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(questionData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showSuccessModal();
+        } else {
+            showToast(data.error || 'Failed to save question', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error saving question:', error);
+        showToast('Failed to save question', 'error');
+    })
+    .finally(() => {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    });
+}
+
+function showSuccessModal() {
+    new bootstrap.Modal(document.getElementById('successModal')).show();
+}
+
+function addAnother() {
+    bootstrap.Modal.getInstance(document.getElementById('successModal')).hide();
+    resetForm();
+    showToast('Ready to add another question!', 'info');
+}
+
+function resetForm() {
+    document.getElementById('questionForm').reset();
+    document.querySelector('input[name="questionType"][value="mcq"]').checked = true;
+    toggleQuestionType();
+    updatePreview();
+    
+    // Focus on first field
+    document.getElementById('subject').focus();
+}
+
+// Auto-save to localStorage (optional)
+function autoSave() {
+    const formData = new FormData(document.getElementById('questionForm'));
+    const data = Object.fromEntries(formData);
+    localStorage.setItem('draft_question', JSON.stringify(data));
+}
+
+// Load auto-saved data (optional)
+function loadDraft() {
+    const draft = localStorage.getItem('draft_question');
+    if (draft && confirm('Would you like to restore your previous draft?')) {
+        const data = JSON.parse(draft);
+        Object.entries(data).forEach(([key, value]) => {
+            const element = document.querySelector(`[name="${key}"]`);
+            if (element) {
+                element.value = value;
+            }
+        });
+        updatePreview();
+    }
+}
+
+// Save draft periodically
+setInterval(autoSave, 30000); // Save every 30 seconds
+
+// Load draft on page load
+setTimeout(loadDraft, 1000);
+</script>
+{% endblock %}

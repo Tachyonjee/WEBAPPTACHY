@@ -1,0 +1,661 @@
+{% extends "shared/layout.html" %}
+
+{% block title %}Doubts - Coaching App{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h3><i class="fas fa-question-circle me-2"></i>Your Doubts</h3>
+                <p class="text-muted">Get help from mentors and clear your concepts</p>
+            </div>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#askDoubtModal">
+                <i class="fas fa-plus me-2"></i>Ask New Doubt
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 col-6 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="text-warning mb-2">
+                    <i class="fas fa-clock fa-2x"></i>
+                </div>
+                <h4 class="card-title">{{ doubts | selectattr('status', 'equalto', 'open') | list | length }}</h4>
+                <p class="card-text text-muted">Open Doubts</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-6 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="text-success mb-2">
+                    <i class="fas fa-check-circle fa-2x"></i>
+                </div>
+                <h4 class="card-title">{{ doubts | selectattr('status', 'equalto', 'resolved') | list | length }}</h4>
+                <p class="card-text text-muted">Resolved</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-6 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="text-info mb-2">
+                    <i class="fas fa-comments fa-2x"></i>
+                </div>
+                <h4 class="card-title">{{ doubts | length }}</h4>
+                <p class="card-text text-muted">Total Doubts</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-6 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="text-primary mb-2">
+                    <i class="fas fa-percentage fa-2x"></i>
+                </div>
+                <h4 class="card-title">
+                    {% if doubts | length > 0 %}
+                        {{ ((doubts | selectattr('status', 'equalto', 'resolved') | list | length / doubts | length) * 100) | round(1) }}%
+                    {% else %}
+                        0%
+                    {% endif %}
+                </h4>
+                <p class="card-text text-muted">Resolution Rate</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Tabs -->
+<div class="row mb-4">
+    <div class="col-12">
+        <ul class="nav nav-pills" id="doubtTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="all-tab" data-bs-toggle="pill" data-bs-target="#all" type="button" role="tab">
+                    All Doubts ({{ doubts | length }})
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="open-tab" data-bs-toggle="pill" data-bs-target="#open" type="button" role="tab">
+                    Open ({{ doubts | selectattr('status', 'equalto', 'open') | list | length }})
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="resolved-tab" data-bs-toggle="pill" data-bs-target="#resolved" type="button" role="tab">
+                    Resolved ({{ doubts | selectattr('status', 'equalto', 'resolved') | list | length }})
+                </button>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<!-- Doubts Content -->
+<div class="row">
+    <div class="col-12">
+        <div class="tab-content" id="doubtTabsContent">
+            <!-- All Doubts -->
+            <div class="tab-pane fade show active" id="all" role="tabpanel">
+                {% if doubts %}
+                    {% for doubt in doubts %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <!-- Doubt Header -->
+                                    <div class="d-flex align-items-center mb-2">
+                                        {% if doubt.status == 'open' %}
+                                            <span class="badge bg-warning text-dark me-2">
+                                                <i class="fas fa-clock me-1"></i>Open
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-success me-2">
+                                                <i class="fas fa-check me-1"></i>Resolved
+                                            </span>
+                                        {% endif %}
+                                        
+                                        {% if doubt.question %}
+                                            <span class="badge bg-primary me-2">{{ doubt.question.subject }}</span>
+                                            <span class="badge bg-secondary me-2">{{ doubt.question.topic }}</span>
+                                        {% else %}
+                                            <span class="badge bg-info me-2">General Doubt</span>
+                                        {% endif %}
+                                        
+                                        <small class="text-muted">
+                                            {{ doubt.created_at.strftime('%d %b %Y, %I:%M %p') }}
+                                        </small>
+                                    </div>
+                                    
+                                    <!-- Doubt Message -->
+                                    <div class="doubt-message mb-3">
+                                        <h6 class="text-primary">Your Question:</h6>
+                                        <p class="mb-0">{{ doubt.message }}</p>
+                                    </div>
+                                    
+                                    <!-- Question Reference (if any) -->
+                                    {% if doubt.question %}
+                                    <div class="question-reference p-3 bg-dark rounded mb-3">
+                                        <h6 class="text-info mb-2">
+                                            <i class="fas fa-link me-1"></i>Related Question:
+                                        </h6>
+                                        <p class="mb-2">{{ doubt.question.question_text[:200] }}{% if doubt.question.question_text|length > 200 %}...{% endif %}</p>
+                                        <button type="button" class="btn btn-sm btn-outline-info" onclick="viewQuestion({{ doubt.question.id }})">
+                                            <i class="fas fa-eye me-1"></i>View Full Question
+                                        </button>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <!-- Response (if resolved) -->
+                                    {% if doubt.status == 'resolved' and doubt.response %}
+                                    <div class="mentor-response">
+                                        <h6 class="text-success">
+                                            <i class="fas fa-user-graduate me-1"></i>Mentor's Response:
+                                        </h6>
+                                        <div class="p-3 bg-success bg-opacity-10 rounded">
+                                            <p class="mb-2">{{ doubt.response }}</p>
+                                            {% if doubt.resolved_at %}
+                                            <small class="text-muted">
+                                                Resolved on {{ doubt.resolved_at.strftime('%d %b %Y, %I:%M %p') }}
+                                                {% if doubt.resolver %}by {{ doubt.resolver.name }}{% endif %}
+                                            </small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col-md-4 text-md-end">
+                                    <!-- Actions -->
+                                    <div class="d-grid gap-2 d-md-block">
+                                        {% if doubt.question %}
+                                            <button type="button" class="btn btn-outline-primary btn-sm" 
+                                                    onclick="practiceQuestion({{ doubt.question.id }})">
+                                                <i class="fas fa-brain me-1"></i>Practice
+                                            </button>
+                                        {% endif %}
+                                        
+                                        {% if doubt.status == 'open' %}
+                                            <button type="button" class="btn btn-outline-info btn-sm" 
+                                                    onclick="updateDoubt({{ doubt.id }})">
+                                                <i class="fas fa-edit me-1"></i>Update
+                                            </button>
+                                        {% endif %}
+                                        
+                                        <button type="button" class="btn btn-outline-secondary btn-sm" 
+                                                onclick="shareDoubt({{ doubt.id }})">
+                                            <i class="fas fa-share me-1"></i>Share
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- Time Status -->
+                                    <div class="mt-3">
+                                        {% if doubt.status == 'open' %}
+                                            {% set days_ago = (now - doubt.created_at).days %}
+                                            {% if days_ago == 0 %}
+                                                <small class="text-muted">Asked today</small>
+                                            {% elif days_ago == 1 %}
+                                                <small class="text-muted">Asked yesterday</small>
+                                            {% else %}
+                                                <small class="text-muted">Asked {{ days_ago }} days ago</small>
+                                            {% endif %}
+                                        {% else %}
+                                            {% set resolution_time = (doubt.resolved_at - doubt.created_at).total_seconds() / 3600 %}
+                                            <small class="text-success">
+                                                Resolved in {{ resolution_time | round(1) }} hours
+                                            </small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="card">
+                        <div class="card-body text-center py-5">
+                            <i class="fas fa-comments fa-4x text-muted mb-3"></i>
+                            <h5>No Doubts Yet</h5>
+                            <p class="text-muted mb-4">Don't hesitate to ask questions when you're stuck!</p>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#askDoubtModal">
+                                <i class="fas fa-plus me-2"></i>Ask Your First Doubt
+                            </button>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Open Doubts -->
+            <div class="tab-pane fade" id="open" role="tabpanel">
+                {% set open_doubts = doubts | selectattr('status', 'equalto', 'open') | list %}
+                {% if open_doubts %}
+                    {% for doubt in open_doubts %}
+                        <!-- Same structure as above but filtered for open doubts -->
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <!-- Repeat the same structure from all doubts -->
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="badge bg-warning text-dark me-2">
+                                        <i class="fas fa-clock me-1"></i>Pending Response
+                                    </span>
+                                    <small class="text-muted">{{ doubt.created_at.strftime('%d %b %Y, %I:%M %p') }}</small>
+                                </div>
+                                <p>{{ doubt.message }}</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                        <h5>No Open Doubts</h5>
+                        <p class="text-muted">All your doubts have been resolved!</p>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Resolved Doubts -->
+            <div class="tab-pane fade" id="resolved" role="tabpanel">
+                {% set resolved_doubts = doubts | selectattr('status', 'equalto', 'resolved') | list %}
+                {% if resolved_doubts %}
+                    {% for doubt in resolved_doubts %}
+                        <!-- Same structure as above but filtered for resolved doubts -->
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="badge bg-success me-2">
+                                        <i class="fas fa-check me-1"></i>Resolved
+                                    </span>
+                                    <small class="text-muted">{{ doubt.resolved_at.strftime('%d %b %Y, %I:%M %p') if doubt.resolved_at else 'Recently' }}</small>
+                                </div>
+                                <p><strong>Q:</strong> {{ doubt.message }}</p>
+                                {% if doubt.response %}
+                                <div class="bg-success bg-opacity-10 p-3 rounded mt-2">
+                                    <p class="mb-0"><strong>A:</strong> {{ doubt.response }}</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-history fa-3x text-muted mb-3"></i>
+                        <h5>No Resolved Doubts</h5>
+                        <p class="text-muted">Your resolved doubts will appear here</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ask Doubt Modal -->
+<div class="modal fade" id="askDoubtModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-question-circle me-2"></i>Ask a Doubt
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="doubtForm">
+                    <div class="mb-3">
+                        <label for="doubtType" class="form-label">Type of Doubt</label>
+                        <select class="form-select" id="doubtType" onchange="toggleQuestionSearch()">
+                            <option value="general">General Question</option>
+                            <option value="question">About a Specific Question</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3 d-none" id="questionSearchDiv">
+                        <label for="questionSearch" class="form-label">Search Question</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="questionSearch" 
+                                   placeholder="Search for a question..." onkeyup="searchQuestions()">
+                            <button type="button" class="btn btn-outline-secondary" onclick="clearQuestionSearch()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div id="questionSearchResults" class="mt-2"></div>
+                        <input type="hidden" id="selectedQuestionId">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="doubtSubject" class="form-label">Subject (Optional)</label>
+                        <select class="form-select" id="doubtSubject">
+                            <option value="">Select Subject</option>
+                            <option value="Physics">Physics</option>
+                            <option value="Chemistry">Chemistry</option>
+                            <option value="Mathematics">Mathematics</option>
+                            {% if student.goal_exam == 'NEET' %}
+                            <option value="Biology">Biology</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="doubtMessage" class="form-label">Your Question/Doubt *</label>
+                        <textarea class="form-control" id="doubtMessage" rows="5" 
+                                  placeholder="Describe your doubt in detail. Be specific about what you're confused about..." 
+                                  required></textarea>
+                        <div class="form-text">
+                            Tip: The more specific you are, the better help you'll get!
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="urgentDoubt">
+                            <label class="form-check-label" for="urgentDoubt">
+                                Mark as urgent (for exam preparation)
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitDoubt()">
+                    <i class="fas fa-paper-plane me-2"></i>Submit Doubt
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Question Detail Modal -->
+<div class="modal fade" id="questionModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Question Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="questionModalBody">
+                <!-- Question details will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="practiceCurrentQuestion()">
+                    <i class="fas fa-brain me-2"></i>Practice This Question
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let currentQuestionId = null;
+let searchTimeout = null;
+
+function toggleQuestionSearch() {
+    const doubtType = document.getElementById('doubtType').value;
+    const questionSearchDiv = document.getElementById('questionSearchDiv');
+    
+    if (doubtType === 'question') {
+        questionSearchDiv.classList.remove('d-none');
+    } else {
+        questionSearchDiv.classList.add('d-none');
+        clearQuestionSearch();
+    }
+}
+
+function searchQuestions() {
+    const query = document.getElementById('questionSearch').value.trim();
+    const resultsDiv = document.getElementById('questionSearchResults');
+    
+    // Clear previous timeout
+    if (searchTimeout) clearTimeout(searchTimeout);
+    
+    if (query.length < 3) {
+        resultsDiv.innerHTML = '';
+        return;
+    }
+    
+    // Debounce search
+    searchTimeout = setTimeout(() => {
+        resultsDiv.innerHTML = '<div class="text-center"><div class="spinner-border spinner-border-sm" role="status"></div></div>';
+        
+        fetch(`/api/questions?search=${encodeURIComponent(query)}&per_page=5`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.questions.length > 0) {
+                    let html = '<div class="list-group list-group-flush">';
+                    
+                    data.questions.forEach(question => {
+                        html += `
+                            <div class="list-group-item list-group-item-action" onclick="selectQuestion(${question.id}, '${question.question_text.substring(0, 100)}...')">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <span class="badge bg-primary me-2">${question.subject}</span>
+                                        <span class="badge bg-secondary me-2">${question.topic}</span>
+                                        <p class="mb-1">${question.question_text.substring(0, 150)}...</p>
+                                    </div>
+                                    <small class="text-muted">Level ${question.difficulty}</small>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    html += '</div>';
+                    resultsDiv.innerHTML = html;
+                } else {
+                    resultsDiv.innerHTML = '<div class="text-muted text-center py-2">No questions found</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error searching questions:', error);
+                resultsDiv.innerHTML = '<div class="text-danger text-center py-2">Error searching questions</div>';
+            });
+    }, 500);
+}
+
+function selectQuestion(questionId, questionText) {
+    document.getElementById('selectedQuestionId').value = questionId;
+    document.getElementById('questionSearch').value = questionText;
+    document.getElementById('questionSearchResults').innerHTML = '';
+    
+    showToast('Question selected for your doubt', 'success');
+}
+
+function clearQuestionSearch() {
+    document.getElementById('questionSearch').value = '';
+    document.getElementById('selectedQuestionId').value = '';
+    document.getElementById('questionSearchResults').innerHTML = '';
+}
+
+function submitDoubt() {
+    const message = document.getElementById('doubtMessage').value.trim();
+    const questionId = document.getElementById('selectedQuestionId').value;
+    const subject = document.getElementById('doubtSubject').value;
+    const isUrgent = document.getElementById('urgentDoubt').checked;
+    
+    if (!message) {
+        showToast('Please enter your doubt message', 'warning');
+        return;
+    }
+    
+    const doubtData = {
+        message: message
+    };
+    
+    if (questionId) {
+        doubtData.question_id = parseInt(questionId);
+    }
+    
+    if (subject) {
+        doubtData.subject = subject;
+    }
+    
+    if (isUrgent) {
+        doubtData.message = `[URGENT] ${doubtData.message}`;
+    }
+    
+    // Show loading state
+    const submitBtn = document.querySelector('#askDoubtModal .btn-primary');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2" role="status"></div>Submitting...';
+    submitBtn.disabled = true;
+    
+    fetch('/student/api/submit-doubt', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(doubtData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message, 'success');
+            bootstrap.Modal.getInstance(document.getElementById('askDoubtModal')).hide();
+            
+            // Reset form
+            document.getElementById('doubtForm').reset();
+            clearQuestionSearch();
+            document.getElementById('doubtType').value = 'general';
+            toggleQuestionSearch();
+            
+            // Reload page to show new doubt
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showToast(data.error || 'Failed to submit doubt', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error submitting doubt:', error);
+        showToast('Failed to submit doubt', 'error');
+    })
+    .finally(() => {
+        // Restore button state
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    });
+}
+
+function viewQuestion(questionId) {
+    currentQuestionId = questionId;
+    
+    fetch(`/api/questions/${questionId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayQuestionDetails(data.question);
+            } else {
+                showToast(data.error || 'Failed to load question details', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error loading question:', error);
+            showToast('Failed to load question details', 'error');
+        });
+}
+
+function displayQuestionDetails(question) {
+    let html = `
+        <div class="question-details">
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                <span class="badge bg-primary">${question.subject}</span>
+                <span class="badge bg-secondary">${question.chapter}</span>
+                <span class="badge bg-info">${question.topic}</span>
+                <span class="badge bg-warning text-dark">Level ${question.difficulty}</span>
+            </div>
+            
+            <div class="question-text mb-4">
+                <h6>Question:</h6>
+                <p>${question.question_text}</p>
+            </div>
+    `;
+    
+    if (question.options) {
+        html += '<div class="options mb-4"><h6>Options:</h6><div class="row">';
+        Object.entries(question.options).forEach(([key, value]) => {
+            const isCorrect = key === question.correct_answer;
+            const badgeClass = isCorrect ? 'bg-success' : 'bg-secondary';
+            
+            html += `
+                <div class="col-md-6 mb-2">
+                    <span class="badge ${badgeClass} me-2">${key}</span>
+                    ${value}
+                </div>
+            `;
+        });
+        html += '</div></div>';
+    }
+    
+    html += `
+            <div class="answer mb-3">
+                <h6>Correct Answer:</h6>
+                <span class="badge bg-success fs-6">${question.correct_answer}</span>
+            </div>
+    `;
+    
+    if (question.hint) {
+        html += `
+            <div class="hint">
+                <h6>Hint:</h6>
+                <div class="alert alert-info">${question.hint}</div>
+            </div>
+        `;
+    }
+    
+    html += '</div>';
+    
+    document.getElementById('questionModalBody').innerHTML = html;
+    new bootstrap.Modal(document.getElementById('questionModal')).show();
+}
+
+function practiceQuestion(questionId) {
+    window.location.href = `/student/practice?question_id=${questionId}`;
+}
+
+function practiceCurrentQuestion() {
+    if (currentQuestionId) {
+        practiceQuestion(currentQuestionId);
+    }
+}
+
+function updateDoubt(doubtId) {
+    showToast('Update doubt feature coming soon!', 'info');
+}
+
+function shareDoubt(doubtId) {
+    // Copy doubt link to clipboard
+    const doubtUrl = `${window.location.origin}/student/doubts#doubt-${doubtId}`;
+    
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(doubtUrl).then(() => {
+            showToast('Doubt link copied to clipboard!', 'success');
+        }).catch(() => {
+            showToast('Could not copy link. Try again.', 'error');
+        });
+    } else {
+        showToast('Share feature not supported in this browser', 'warning');
+    }
+}
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-focus on doubt message when modal opens
+    document.getElementById('askDoubtModal').addEventListener('shown.bs.modal', function() {
+        document.getElementById('doubtMessage').focus();
+    });
+    
+    // Show helpful tips
+    setTimeout(() => {
+        if ({{ doubts | length }} === 0) {
+            showToast('💡 Tip: Don\'t hesitate to ask questions! Our mentors are here to help you succeed.', 'info', 5000);
+        }
+    }, 2000);
+});
+</script>
+{% endblock %}

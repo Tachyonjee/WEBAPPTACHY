@@ -1,0 +1,288 @@
+{% extends "shared/layout.html" %}
+
+{% block title %}Dashboard - Coaching App{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Welcome Section -->
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h4 class="card-title mb-2">
+                            Welcome back, {{ student.user.name }}! 👋
+                        </h4>
+                        <p class="text-muted mb-2">
+                            Goal: {{ student.goal_exam }} • Batch: {{ student.batch or 'Individual' }}
+                        </p>
+                        {% if streak and streak.current_streak > 0 %}
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-warning text-dark me-2">
+                                    <i class="fas fa-fire"></i> {{ streak.current_streak }} day streak!
+                                </span>
+                                <small class="text-muted">Keep it up!</small>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <a href="{{ url_for('students.practice') }}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-brain me-2"></i>Start Practice
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Stats Cards -->
+    <div class="col-md-3 col-6 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="text-primary mb-2">
+                    <i class="fas fa-calendar-day fa-2x"></i>
+                </div>
+                <h4 class="card-title">{{ today_attempts }}</h4>
+                <p class="card-text text-muted">Questions Today</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-6 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="text-success mb-2">
+                    <i class="fas fa-check-circle fa-2x"></i>
+                </div>
+                <h4 class="card-title">{{ today_correct }}</h4>
+                <p class="card-text text-muted">Correct Today</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-6 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="text-info mb-2">
+                    <i class="fas fa-chart-line fa-2x"></i>
+                </div>
+                <h4 class="card-title">{{ week_attempts }}</h4>
+                <p class="card-text text-muted">This Week</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-6 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="text-warning mb-2">
+                    <i class="fas fa-star fa-2x"></i>
+                </div>
+                <h4 class="card-title">{{ points.points_total if points else 0 }}</h4>
+                <p class="card-text text-muted">Total Points</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Quick Actions -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-bolt me-2"></i>Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <a href="{{ url_for('students.practice') }}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-brain d-block mb-2"></i>
+                            Adaptive Practice
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a href="{{ url_for('students.lectures') }}" class="btn btn-outline-info w-100">
+                            <i class="fas fa-video d-block mb-2"></i>
+                            Watch Lectures
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a href="{{ url_for('students.review') }}" class="btn btn-outline-success w-100">
+                            <i class="fas fa-history d-block mb-2"></i>
+                            Review Attempts
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a href="{{ url_for('students.doubts') }}" class="btn btn-outline-warning w-100 position-relative">
+                            <i class="fas fa-question-circle d-block mb-2"></i>
+                            Ask Doubts
+                            {% if pending_doubts > 0 %}
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                    {{ pending_doubts }}
+                                </span>
+                            {% endif %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Gamification -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-trophy me-2"></i>Achievements
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- Streak Info -->
+                {% if streak %}
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fw-semibold">Daily Streak</span>
+                        <span class="badge bg-warning text-dark">
+                            <i class="fas fa-fire"></i> {{ streak.current_streak }} days
+                        </span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-warning" style="width: {{ min(100, (streak.current_streak / 30) * 100) }}%"></div>
+                    </div>
+                    <small class="text-muted">Best: {{ streak.best_streak }} days</small>
+                </div>
+                {% endif %}
+                
+                <!-- Points Info -->
+                {% if points %}
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fw-semibold">Points Today</span>
+                        <span class="badge bg-info">{{ points.points_today }}</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-info" style="width: {{ min(100, (points.points_today / 50) * 100) }}%"></div>
+                    </div>
+                    <small class="text-muted">Daily goal: 50 points</small>
+                </div>
+                {% endif %}
+                
+                <!-- Recent Badges -->
+                {% if recent_badges %}
+                <div class="mt-3">
+                    <h6 class="fw-semibold mb-2">Recent Badges</h6>
+                    {% for badge in recent_badges %}
+                        <span class="badge bg-success me-1 mb-1" title="{{ badge.badge_description }}">
+                            <i class="fas fa-medal me-1"></i>{{ badge.badge_name }}
+                        </span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center text-muted">
+                    <i class="fas fa-medal fa-2x mb-2 opacity-50"></i>
+                    <p class="mb-0">Start practicing to earn badges!</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-clock me-2"></i>Today's Progress
+                </h5>
+                <a href="{{ url_for('students.progress') }}" class="btn btn-sm btn-outline-primary">
+                    View Details
+                </a>
+            </div>
+            <div class="card-body">
+                {% if today_attempts > 0 %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <canvas id="todayAccuracyChart" width="400" height="200"></canvas>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="text-center">
+                                <h3 class="text-primary">{{ ((today_correct / today_attempts) * 100) | round(1) if today_attempts > 0 else 0 }}%</h3>
+                                <p class="text-muted">Today's Accuracy</p>
+                                
+                                <div class="mt-3">
+                                    <p class="mb-1"><strong>{{ today_correct }}</strong> correct out of <strong>{{ today_attempts }}</strong> attempts</p>
+                                    {% if today_attempts >= 10 %}
+                                        <span class="badge bg-success">Great progress today!</span>
+                                    {% elif today_attempts >= 5 %}
+                                        <span class="badge bg-info">Good practice session!</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">Keep practicing!</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-clipboard-list fa-3x mb-3 opacity-50"></i>
+                        <h5>No practice today yet</h5>
+                        <p class="mb-3">Start your learning journey now!</p>
+                        <a href="{{ url_for('students.practice') }}" class="btn btn-primary">
+                            Begin Practice Session
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Update gamification counters in navbar
+document.addEventListener('DOMContentLoaded', function() {
+    const streakElement = document.getElementById('streak-count');
+    const pointsElement = document.getElementById('points-count');
+    
+    if (streakElement) {
+        streakElement.textContent = {{ streak.current_streak if streak else 0 }};
+    }
+    
+    if (pointsElement) {
+        pointsElement.textContent = {{ points.points_total if points else 0 }};
+    }
+    
+    // Today's accuracy chart
+    {% if today_attempts > 0 %}
+    const ctx = document.getElementById('todayAccuracyChart');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Correct', 'Incorrect'],
+                datasets: [{
+                    data: [{{ today_correct }}, {{ today_attempts - today_correct }}],
+                    backgroundColor: ['#198754', '#dc3545'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    }
+    {% endif %}
+});
+</script>
+{% endblock %}

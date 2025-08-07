@@ -1,0 +1,333 @@
+{% extends "shared/layout.html" %}
+
+{% block title %}Practice Question - Coaching App{% endblock %}
+
+{% block content %}
+<!-- Kiosk Mode Banner -->
+{% if is_kiosk %}
+<div class="alert alert-info mb-0 text-center">
+    <i class="bi bi-display me-2"></i>
+    <strong>Kiosk Mode Active</strong> - Focused practice environment
+</div>
+{% endif %}
+
+<div class="container-fluid {% if is_kiosk %}px-1{% endif %}">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+            <!-- Question Card -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="badge bg-secondary me-2">{{ question.subject }}</span>
+                        <span class="badge bg-info me-2">{{ question.chapter }}</span>
+                        <span class="badge bg-success">{{ question.topic }}</span>
+                    </div>
+                    <div>
+                        <span class="badge bg-warning">Level {{ question.difficulty }}</span>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Timer -->
+                    <div class="mb-3 text-center">
+                        <div class="timer-display">
+                            <i class="bi bi-clock me-2"></i>
+                            <span id="timer" class="fw-bold">00:00</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Question Text -->
+                    <div class="question-container mb-4">
+                        <h5 class="question-text">{{ question.question_text }}</h5>
+                    </div>
+                    
+                    <!-- Answer Options -->
+                    <form id="answerForm" method="post" action="{{ url_for('students.submit_attempt') }}">
+                        <input type="hidden" name="session_id" value="{{ session.id }}">
+                        <input type="hidden" name="question_id" value="{{ question.id }}">
+                        <input type="hidden" name="time_taken" id="timeInput">
+                        <input type="hidden" name="attempt_number" id="attemptNumber" value="1">
+                        
+                        {% if question.options %}
+                            <!-- Multiple Choice Options -->
+                            <div class="options-container mb-4">
+                                {% for key, value in question.options.items() %}
+                                <div class="form-check mb-3 option-item">
+                                    <input class="form-check-input" type="radio" 
+                                           name="answer" value="{{ key }}" 
+                                           id="option{{ key }}">
+                                    <label class="form-check-label" for="option{{ key }}">
+                                        <strong>{{ key }}.</strong> {{ value }}
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <!-- Text Answer Input -->
+                            <div class="mb-4">
+                                <label for="textAnswer" class="form-label">Your Answer:</label>
+                                <input type="text" class="form-control form-control-lg" 
+                                       name="answer" id="textAnswer" required
+                                       placeholder="Enter your answer here">
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Action Buttons -->
+                        <div class="d-flex gap-3 justify-content-center">
+                            {% if question.hint_available %}
+                            <button type="button" class="btn btn-outline-info" id="hintBtn">
+                                <i class="bi bi-lightbulb me-1"></i>
+                                Show Hint
+                            </button>
+                            {% endif %}
+                            
+                            <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                                <i class="bi bi-check-circle me-1"></i>
+                                Submit Answer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Result Card (Initially Hidden) -->
+            <div class="card mt-3 d-none" id="resultCard">
+                <div class="card-body text-center" id="resultBody">
+                    <!-- Populated via JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Hint Card (Initially Hidden) -->
+            {% if question.hint_available %}
+            <div class="card mt-3 d-none" id="hintCard">
+                <div class="card-body">
+                    <h6 class="card-title">
+                        <i class="bi bi-lightbulb text-warning me-2"></i>
+                        Hint
+                    </h6>
+                    <p class="card-text" id="hintText"></p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/timer.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let startTime = Date.now();
+    let currentAttempt = 1;
+    let timer;
+    let timerElement = document.getElementById('timer');
+    let timeInput = document.getElementById('timeInput');
+    let attemptNumberInput = document.getElementById('attemptNumber');
+    let answerForm = document.getElementById('answerForm');
+    let submitBtn = document.getElementById('submitBtn');
+    let hintBtn = document.getElementById('hintBtn');
+    let resultCard = document.getElementById('resultCard');
+    let hintCard = document.getElementById('hintCard');
+    
+    // Start timer
+    startTimer();
+    
+    // Handle form submission
+    answerForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        submitAnswer();
+    });
+    
+    // Handle hint button
+    if (hintBtn) {
+        hintBtn.addEventListener('click', function() {
+            showHint();
+        });
+    }
+    
+    function startTimer() {
+        timer = setInterval(function() {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            
+            const timeStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            timerElement.textContent = timeStr;
+            
+            // Change color after 60 seconds
+            if (elapsed >= 60) {
+                timerElement.classList.add('text-danger');
+            }
+            
+            // Update hidden input
+            timeInput.value = elapsed;
+        }, 1000);
+    }
+    
+    function stopTimer() {
+        if (timer) {
+            clearInterval(timer);
+        }
+    }
+    
+    function submitAnswer() {
+        // Get selected answer
+        let answer = '';
+        {% if question.options %}
+        const selectedOption = document.querySelector('input[name="answer"]:checked');
+        if (!selectedOption) {
+            alert('Please select an answer.');
+            return;
+        }
+        answer = selectedOption.value;
+        {% else %}
+        const textAnswer = document.getElementById('textAnswer');
+        if (!textAnswer.value.trim()) {
+            alert('Please enter an answer.');
+            return;
+        }
+        answer = textAnswer.value.trim();
+        {% endif %}
+        
+        // Stop timer
+        stopTimer();
+        
+        // Disable submit button
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Submitting...';
+        
+        // Prepare form data
+        const formData = new FormData();
+        formData.append('session_id', '{{ session.id }}');
+        formData.append('question_id', '{{ question.id }}');
+        formData.append('answer', answer);
+        formData.append('time_taken', timeInput.value);
+        formData.append('attempt_number', currentAttempt);
+        
+        // Submit via fetch
+        fetch('{{ url_for("students.submit_attempt") }}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            showResult(data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error submitting answer. Please try again.');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i>Submit Answer';
+            startTimer(); // Restart timer on error
+        });
+    }
+    
+    function showResult(data) {
+        let resultHtml = '';
+        
+        if (data.correct) {
+            resultHtml = `
+                <div class="text-success mb-3">
+                    <i class="bi bi-check-circle-fill display-6 mb-3"></i>
+                    <h4>Correct!</h4>
+                    <p>Well done! You earned ${data.points_awarded} points.</p>
+                </div>
+            `;
+        } else {
+            resultHtml = `
+                <div class="text-danger mb-3">
+                    <i class="bi bi-x-circle-fill display-6 mb-3"></i>
+                    <h4>Incorrect</h4>
+                    <p>The correct answer is: <strong>${data.correct_answer}</strong></p>
+                    <p>You earned ${data.points_awarded} participation points.</p>
+                </div>
+            `;
+        }
+        
+        // Add explanation if available
+        if (data.explanation) {
+            resultHtml += `
+                <div class="mt-3 text-start">
+                    <h6>Explanation:</h6>
+                    <p class="text-muted">${data.explanation}</p>
+                </div>
+            `;
+        }
+        
+        // Add retry option for incorrect answers (first attempt only)
+        if (!data.correct && currentAttempt === 1) {
+            resultHtml += `
+                <div class="mt-3">
+                    <button type="button" class="btn btn-warning me-2" onclick="retryQuestion()">
+                        <i class="bi bi-arrow-clockwise me-1"></i>
+                        Try Again
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="nextQuestion()">
+                        <i class="bi bi-arrow-right me-1"></i>
+                        Next Question
+                    </button>
+                </div>
+            `;
+        } else {
+            resultHtml += `
+                <div class="mt-3">
+                    <button type="button" class="btn btn-primary btn-lg" onclick="nextQuestion()">
+                        <i class="bi bi-arrow-right me-1"></i>
+                        Next Question
+                    </button>
+                </div>
+            `;
+        }
+        
+        document.getElementById('resultBody').innerHTML = resultHtml;
+        resultCard.classList.remove('d-none');
+        
+        // Scroll to result
+        resultCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    
+    function showHint() {
+        // This would typically fetch the hint via API
+        // For now, we'll show a placeholder
+        document.getElementById('hintText').textContent = 'Hint is available for this question.';
+        hintCard.classList.remove('d-none');
+        hintBtn.disabled = true;
+        hintBtn.innerHTML = '<i class="bi bi-lightbulb me-1"></i>Hint Shown';
+    }
+    
+    // Global functions for button clicks
+    window.retryQuestion = function() {
+        currentAttempt = 2;
+        attemptNumberInput.value = 2;
+        
+        // Reset form
+        document.querySelectorAll('input[name="answer"]').forEach(input => {
+            input.checked = false;
+        });
+        
+        const textAnswer = document.getElementById('textAnswer');
+        if (textAnswer) {
+            textAnswer.value = '';
+        }
+        
+        // Hide result card
+        resultCard.classList.add('d-none');
+        
+        // Re-enable submit button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i>Submit Answer (Attempt 2)';
+        
+        // Restart timer
+        startTime = Date.now();
+        timerElement.classList.remove('text-danger');
+        startTimer();
+    };
+    
+    window.nextQuestion = function() {
+        // Redirect to next question
+        window.location.href = '{{ url_for("students.practice_question", session_id=session.id) }}';
+    };
+});
+</script>
+{% endblock %}
