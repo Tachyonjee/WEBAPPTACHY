@@ -4,7 +4,7 @@ Quick demo launcher for the coaching app frontend
 """
 import os
 import sys
-from flask import Flask, render_template, jsonify, session
+from flask import Flask, render_template, jsonify, session, request, redirect
 
 # Simple demo app
 app = Flask(__name__, template_folder='templates', static_folder='app/static')
@@ -19,12 +19,28 @@ DEMO_DATA = {
     "week_stats": {"attempts": 68, "correct": 51}
 }
 
+# Operator demo data
+OPERATOR_DATA = {
+    "name": "Demo Operator", "role": "operator",
+    "total_questions": 250, "pending_qc": 12,
+    "active_students": 45, "recent_uploads": 3
+}
+
 @app.before_request
 def setup():
-    session.update({
-        'user_id': 1, 'user_role': 'student', 
-        'user_name': 'Demo Student', 'user_email': 'demo@example.com'
-    })
+    # Check if role switch is requested
+    role = request.args.get('role', session.get('user_role', 'student'))
+    
+    if role == 'operator':
+        session.update({
+            'user_id': 2, 'user_role': 'operator',
+            'user_name': 'Demo Operator', 'user_email': 'operator@example.com'
+        })
+    else:
+        session.update({
+            'user_id': 1, 'user_role': 'student', 
+            'user_name': 'Demo Student', 'user_email': 'demo@example.com'
+        })
 
 @app.route('/')
 def home():
@@ -73,6 +89,63 @@ def login():
 def api_test():
     return jsonify({'status': 'working', 'app': 'coaching-demo'})
 
+# === OPERATOR INTERFACE ROUTES ===
+@app.route('/operator')
+@app.route('/operator/dashboard')
+def operator_dashboard():
+    subjects_stats = {
+        'Mathematics': 75, 'Physics': 65, 'Chemistry': 58, 'Biology': 42
+    }
+    return render_template('operator/dashboard.html', 
+                         total_questions=250, pending_qc=12, 
+                         active_students=45, recent_uploads=3,
+                         subjects_stats=subjects_stats, 
+                         recent_activities=[], pending_doubts=8)
+
+@app.route('/operator/bank')
+def question_bank():
+    return render_template('operator/bank.html', 
+                         questions=[], subjects=["Mathematics", "Physics", "Chemistry", "Biology"])
+
+@app.route('/operator/add_question')
+def add_question():
+    return render_template('operator/add_question.html', 
+                         subjects=["Mathematics", "Physics", "Chemistry", "Biology"])
+
+@app.route('/operator/bulk_upload')
+def bulk_upload():
+    return render_template('operator/bulk_upload.html')
+
+@app.route('/operator/qc')
+def quality_control():
+    return render_template('operator/qc.html', pending_questions=[])
+
+@app.route('/operator/edit_question/<int:question_id>')
+def edit_question(question_id):
+    return render_template('operator/edit_question.html', question_id=question_id)
+
+# === ADDITIONAL STUDENT ROUTES ===
+@app.route('/doubts')
+def doubts():
+    return render_template('student/doubts.html', doubts=[])
+
+@app.route('/bookmarks')
+def bookmarks():
+    return render_template('student/bookmarks.html', bookmarks=[])
+
+@app.route('/lectures')
+def lectures():
+    return render_template('student/lectures.html', lectures=[])
+
+# === ROLE SWITCHING FOR DEMO ===
+@app.route('/switch_role/<role>')
+def switch_role(role):
+    session['user_role'] = role
+    if role == 'operator':
+        return redirect('/operator')
+    else:
+        return redirect('/')
+
 if __name__ == '__main__':
-    print("Starting Coaching App Demo on port 5000...")
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    print("Starting Coaching App Demo on port 3000...")
+    app.run(host='0.0.0.0', port=3000, debug=False)

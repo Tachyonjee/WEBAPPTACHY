@@ -81,7 +81,7 @@
             <h4 class="mb-3">Quick Actions</h4>
         </div>
         <div class="col-md-4 col-6 mb-3">
-            <a href="{{ url_for('questions.add_question') }}" class="card text-decoration-none h-100">
+            <a href="{{ url_for('add_question') }}" class="card text-decoration-none h-100">
                 <div class="card-body text-center">
                     <div class="display-6 text-primary mb-3">
                         <i class="bi bi-plus-circle"></i>
@@ -92,7 +92,7 @@
             </a>
         </div>
         <div class="col-md-4 col-6 mb-3">
-            <a href="{{ url_for('questions.bulk_upload') }}" class="card text-decoration-none h-100">
+            <a href="{{ url_for('bulk_upload') }}" class="card text-decoration-none h-100">
                 <div class="card-body text-center">
                     <div class="display-6 text-success mb-3">
                         <i class="bi bi-file-earmark-arrow-up"></i>
@@ -103,7 +103,7 @@
             </a>
         </div>
         <div class="col-md-4 col-6 mb-3">
-            <a href="{{ url_for('questions.bank') }}" class="card text-decoration-none h-100">
+            <a href="{{ url_for('question_bank') }}" class="card text-decoration-none h-100">
                 <div class="card-body text-center">
                     <div class="display-6 text-info mb-3">
                         <i class="bi bi-bank"></i>
@@ -114,7 +114,7 @@
             </a>
         </div>
         <div class="col-md-4 col-6 mb-3">
-            <a href="{{ url_for('lectures.add_lecture') }}" class="card text-decoration-none h-100">
+            <a href="#" class="card text-decoration-none h-100">
                 <div class="card-body text-center">
                     <div class="display-6 text-warning mb-3">
                         <i class="bi bi-play-circle"></i>
@@ -125,7 +125,7 @@
             </a>
         </div>
         <div class="col-md-4 col-6 mb-3">
-            <a href="{{ url_for('lectures.list_lectures') }}" class="card text-decoration-none h-100">
+            <a href="#" class="card text-decoration-none h-100">
                 <div class="card-body text-center">
                     <div class="display-6 text-secondary mb-3">
                         <i class="bi bi-collection-play"></i>
@@ -136,7 +136,7 @@
             </a>
         </div>
         <div class="col-md-4 col-6 mb-3">
-            <a href="{{ url_for('questions.qc') }}" class="card text-decoration-none h-100">
+            <a href="{{ url_for('quality_control') }}" class="card text-decoration-none h-100">
                 <div class="card-body text-center">
                     <div class="display-6 text-danger mb-3">
                         <i class="bi bi-shield-check"></i>
@@ -162,7 +162,7 @@
                                 <h6 class="mb-1">Review New Questions</h6>
                                 <small class="text-muted">Check recently added questions for quality</small>
                             </div>
-                            <a href="{{ url_for('questions.qc') }}" class="btn btn-sm btn-outline-primary">
+                            <a href="{{ url_for('quality_control') }}" class="btn btn-sm btn-outline-primary">
                                 Review
                             </a>
                         </div>
@@ -171,7 +171,7 @@
                                 <h6 class="mb-1">Update Question Difficulty</h6>
                                 <small class="text-muted">Adjust difficulty based on student performance</small>
                             </div>
-                            <a href="{{ url_for('questions.bank') }}" class="btn btn-sm btn-outline-primary">
+                            <a href="{{ url_for('question_bank') }}" class="btn btn-sm btn-outline-primary">
                                 Manage
                             </a>
                         </div>
