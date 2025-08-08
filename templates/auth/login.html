@@ -1,157 +1,120 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Coaching App</title>
-    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
-    <link rel="manifest" href="/static/manifest.json">
-    <meta name="theme-color" content="#000000">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
-        .login-container {
-            min-height: 100vh;
+        body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
         }
         .login-card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
         }
-        .brand-title {
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-weight: bold;
+        .login-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            text-align: center;
+            padding: 2rem;
         }
-        .btn-primary {
-            background: linear-gradient(45deg, #667eea, #764ba2);
+        .form-floating .form-control {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+        }
+        .form-floating .form-control:focus {
+            border-color: #4facfe;
+            box-shadow: 0 0 0 0.2rem rgba(79, 172, 254, 0.25);
+        }
+        .btn-login {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
             border: none;
-            padding: 12px 24px;
-            border-radius: 50px;
-            font-weight: 500;
+            border-radius: 10px;
+            padding: 15px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        .btn-primary:hover {
-            background: linear-gradient(45deg, #5a6fd8, #6a4190);
+        .btn-login:hover {
             transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 172, 254, 0.3);
         }
-        .form-control {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            border-radius: 15px;
-            padding: 12px 20px;
+        .credentials-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1.5rem;
         }
-        .form-control:focus {
-            background: rgba(255, 255, 255, 0.15);
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-            color: white;
-        }
-        .form-control::placeholder {
-            color: rgba(255, 255, 255, 0.7);
-        }
-        .alert {
-            border-radius: 15px;
-            border: none;
-        }
-        .feature-card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            transition: transform 0.3s ease;
-        }
-        .feature-card:hover {
-            transform: translateY(-5px);
+        .credential-item {
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
         }
     </style>
 </head>
 <body>
-    <div class="login-container d-flex align-items-center justify-content-center">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-md-6 col-lg-5">
-                    <div class="login-card p-5 shadow">
-                        <div class="text-center mb-4">
-                            <h1 class="brand-title h2 mb-2">🎓 Coaching App</h1>
-                            <p class="text-white-50">Your path to exam success</p>
-                        </div>
-
-                        <div id="login-form">
-                            <form id="otpRequestForm">
-                                <div class="mb-4">
-                                    <label for="identifier" class="form-label text-white">Email or Phone Number</label>
-                                    <input type="text" class="form-control" id="identifier" name="identifier" 
-                                           placeholder="Enter your email or phone number" required>
-                                    <div class="form-text text-white-50">
-                                        We'll send you a one-time password to login securely
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="login-card">
+                    <div class="login-header">
+                        <h3><i class="bi bi-mortarboard me-2"></i>Coaching Platform</h3>
+                        <p class="mb-0">Welcome Back!</p>
+                    </div>
+                    
+                    <div class="card-body p-4">
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' if category == 'success' else 'info' }} alert-dismissible fade show">
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                                     </div>
-                                </div>
-                                
-                                <div class="d-grid">
-                                    <button type="submit" class="btn btn-primary btn-lg">
-                                        <span class="spinner-border spinner-border-sm me-2 d-none" id="loading-spinner"></span>
-                                        Send OTP
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-
-                        <div id="otp-form" class="d-none">
-                            <div class="text-center mb-4">
-                                <h4 class="text-white">Enter OTP</h4>
-                                <p class="text-white-50">
-                                    We've sent a 6-digit code to <span id="sent-to"></span>
-                                </p>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+                        
+                        <form method="POST">
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" id="username" name="username" placeholder="Username" required>
+                                <label for="username"><i class="bi bi-person me-2"></i>Username</label>
                             </div>
                             
-                            <form id="otpVerifyForm">
-                                <div class="mb-4">
-                                    <input type="text" class="form-control text-center fs-4" id="otp_code" 
-                                           name="otp_code" placeholder="000000" maxlength="6" required
-                                           style="letter-spacing: 0.5em;">
-                                </div>
-                                
-                                <div class="d-grid mb-3">
-                                    <button type="submit" class="btn btn-primary btn-lg">
-                                        <span class="spinner-border spinner-border-sm me-2 d-none" id="verify-loading-spinner"></span>
-                                        Verify & Login
-                                    </button>
-                                </div>
-                                
-                                <div class="text-center">
-                                    <button type="button" class="btn btn-link text-white-50" id="resend-otp">
-                                        Didn't receive? Resend OTP
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-
-                        <div id="alerts"></div>
-                    </div>
-
-                    <!-- Features Section -->
-                    <div class="row mt-5 text-white">
-                        <div class="col-md-4 mb-3">
-                            <div class="feature-card p-3 text-center">
-                                <div class="fs-1 mb-2">🧠</div>
-                                <h6>Adaptive Learning</h6>
-                                <small class="text-white-50">Questions adapt to your level</small>
+                            <div class="form-floating mb-4">
+                                <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+                                <label for="password"><i class="bi bi-lock me-2"></i>Password</label>
                             </div>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <div class="feature-card p-3 text-center">
-                                <div class="fs-1 mb-2">📚</div>
-                                <h6>JEE & NEET</h6>
-                                <small class="text-white-50">Complete exam preparation</small>
-                            </div>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <div class="feature-card p-3 text-center">
-                                <div class="fs-1 mb-2">🏆</div>
-                                <h6>Gamification</h6>
-                                <small class="text-white-50">Streaks, points & badges</small>
+                            
+                            <button type="submit" class="btn btn-primary btn-login w-100 mb-3">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                            </button>
+                        </form>
+                        
+                        <div class="credentials-card">
+                            <h6 class="text-muted mb-2"><i class="bi bi-info-circle me-1"></i>Demo Credentials</h6>
+                            <div class="row">
+                                <div class="col-6">
+                                    <strong class="text-primary">Students:</strong>
+                                    <div class="credential-item">student1 / student123</div>
+                                    <div class="credential-item">student2 / student123</div>
+                                    
+                                    <strong class="text-success mt-2 d-block">Mentors:</strong>
+                                    <div class="credential-item">mentor1 / mentor123</div>
+                                </div>
+                                <div class="col-6">
+                                    <strong class="text-warning">Operators:</strong>
+                                    <div class="credential-item">operator1 / operator123</div>
+                                    <div class="credential-item">operator2 / operator123</div>
+                                    
+                                    <strong class="text-danger mt-2 d-block">Admin:</strong>
+                                    <div class="credential-item">admin / admin123</div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -159,177 +122,7 @@
             </div>
         </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        let currentIdentifier = '';
-
-        // OTP Request Form
-        document.getElementById('otpRequestForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const identifier = document.getElementById('identifier').value.trim();
-            const loadingSpinner = document.getElementById('loading-spinner');
-            const submitBtn = e.target.querySelector('button[type="submit"]');
-            
-            if (!identifier) {
-                showAlert('Please enter your email or phone number', 'danger');
-                return;
-            }
-            
-            // Show loading
-            loadingSpinner.classList.remove('d-none');
-            submitBtn.disabled = true;
-            
-            try {
-                const response = await fetch('/api/auth/send-otp', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ identifier })
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok) {
-                    currentIdentifier = identifier;
-                    document.getElementById('sent-to').textContent = identifier;
-                    document.getElementById('login-form').classList.add('d-none');
-                    document.getElementById('otp-form').classList.remove('d-none');
-                    showAlert('OTP sent successfully!', 'success');
-                    
-                    // Focus on OTP input
-                    setTimeout(() => {
-                        document.getElementById('otp_code').focus();
-                    }, 100);
-                } else {
-                    showAlert(data.error || 'Failed to send OTP', 'danger');
-                }
-            } catch (error) {
-                showAlert('Network error. Please try again.', 'danger');
-            } finally {
-                loadingSpinner.classList.add('d-none');
-                submitBtn.disabled = false;
-            }
-        });
-
-        // OTP Verification Form
-        document.getElementById('otpVerifyForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const otpCode = document.getElementById('otp_code').value.trim();
-            const loadingSpinner = document.getElementById('verify-loading-spinner');
-            const submitBtn = e.target.querySelector('button[type="submit"]');
-            
-            if (!otpCode || otpCode.length !== 6) {
-                showAlert('Please enter a valid 6-digit OTP', 'danger');
-                return;
-            }
-            
-            // Show loading
-            loadingSpinner.classList.remove('d-none');
-            submitBtn.disabled = true;
-            
-            try {
-                const response = await fetch('/api/auth/verify-otp', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ otp_code: otpCode })
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok) {
-                    // Store tokens
-                    localStorage.setItem('access_token', data.access_token);
-                    localStorage.setItem('refresh_token', data.refresh_token);
-                    localStorage.setItem('user_data', JSON.stringify(data.user));
-                    
-                    showAlert('Login successful! Redirecting...', 'success');
-                    
-                    // Redirect based on user role
-                    setTimeout(() => {
-                        if (data.user.role === 'student') {
-                            window.location.href = '/student';
-                        } else if (data.user.role === 'operator') {
-                            window.location.href = '/operator';
-                        } else if (data.user.role === 'mentor') {
-                            window.location.href = '/mentor';
-                        } else {
-                            window.location.href = '/dashboard';
-                        }
-                    }, 1000);
-                } else {
-                    showAlert(data.error || 'Invalid OTP', 'danger');
-                    
-                    // If too many attempts, reset form
-                    if (data.error.includes('Too many')) {
-                        setTimeout(() => {
-                            resetToLoginForm();
-                        }, 2000);
-                    }
-                }
-            } catch (error) {
-                showAlert('Network error. Please try again.', 'danger');
-            } finally {
-                loadingSpinner.classList.add('d-none');
-                submitBtn.disabled = false;
-            }
-        });
-
-        // Resend OTP
-        document.getElementById('resend-otp').addEventListener('click', function() {
-            resetToLoginForm();
-            document.getElementById('identifier').value = currentIdentifier;
-        });
-
-        // Auto-format OTP input
-        document.getElementById('otp_code').addEventListener('input', function(e) {
-            this.value = this.value.replace(/\D/g, '');
-        });
-
-        function resetToLoginForm() {
-            document.getElementById('login-form').classList.remove('d-none');
-            document.getElementById('otp-form').classList.add('d-none');
-            document.getElementById('otp_code').value = '';
-            clearAlerts();
-        }
-
-        function showAlert(message, type) {
-            const alertsContainer = document.getElementById('alerts');
-            const alert = document.createElement('div');
-            alert.className = `alert alert-${type} alert-dismissible fade show mt-3`;
-            alert.innerHTML = `
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-            alertsContainer.appendChild(alert);
-            
-            // Auto-dismiss after 5 seconds
-            setTimeout(() => {
-                if (alert.parentNode) {
-                    alert.remove();
-                }
-            }, 5000);
-        }
-
-        function clearAlerts() {
-            document.getElementById('alerts').innerHTML = '';
-        }
-
-        // Service Worker Registration for PWA
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/static/sw.js')
-                .then(function(registration) {
-                    console.log('SW registered: ', registration);
-                })
-                .catch(function(registrationError) {
-                    console.log('SW registration failed: ', registrationError);
-                });
-        }
-    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -1,14 +1,25 @@
 #!/usr/bin/env python3
 """
-Quick demo launcher for the coaching app frontend
+Quick demo launcher for the coaching app frontend with authentication
 """
-import os
+import subprocess
 import sys
-from flask import Flask, render_template, jsonify, session, request, redirect
+import os
 
-# Simple demo app
-app = Flask(__name__, template_folder='templates', static_folder='app/static')
-app.secret_key = 'demo-key-123'
+def main():
+    print("Starting Coaching App with Authentication...")
+    print("This will redirect to the integrated app with login functionality.")
+    
+    # Run the integrated app
+    try:
+        subprocess.run([sys.executable, 'integrated_app.py'], check=True)
+    except KeyboardInterrupt:
+        print("\nServer stopped.")
+    except Exception as e:
+        print(f"Error starting server: {e}")
+
+if __name__ == '__main__':
+    main()
 
 # Demo data
 DEMO_DATA = {
