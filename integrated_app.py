@@ -35,48 +35,17 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
 
 db = SQLAlchemy(app, model_class=Base)
 
-# ==================== MODELS ====================
-class User(db.Model):
-    __tablename__ = 'users'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(256), nullable=False)
-    role = db.Column(db.String(20), nullable=False)  # student, mentor, operator, admin
-    full_name = db.Column(db.String(100), nullable=False)
-    phone = db.Column(db.String(15))
-    is_active = db.Column(db.Boolean, default=True)
-    created_at = db.Column(db.DateTime, default=datetime.now)
-    last_login = db.Column(db.DateTime)
-    
-    # Additional role-specific data
-    goal_exam = db.Column(db.String(20))  # For students: JEE, NEET
-    batch_name = db.Column(db.String(50))  # For students
-    specialization = db.Column(db.String(50))  # For mentors: Math, Physics, etc.
-    department = db.Column(db.String(50))  # For operators/admin
-    
-    def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
-    
-    def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
-    
-    def update_last_login(self):
-        self.last_login = datetime.now()
-        db.session.commit()
+# Import extensions and models
+from extensions import db, init_extensions
 
-class StudentProgress(db.Model):
-    __tablename__ = 'student_progress'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    total_points = db.Column(db.Integer, default=0)
-    current_streak = db.Column(db.Integer, default=0)
-    best_streak = db.Column(db.Integer, default=0)
-    questions_attempted = db.Column(db.Integer, default=0)
-    questions_correct = db.Column(db.Integer, default=0)
-    last_activity = db.Column(db.DateTime, default=datetime.now)
+# Import all models
+from models.user import User
+from models.student import StudentProgress
+from models.visitor import Visitor, VisitorMeeting
+from models.admission import AdmissionApplication, AdmissionDocument, AssessmentResult
+from models.academic import (Class, ClassMaterial, DailyPracticeProblem, DPPQuestion, 
+                           DPPAttempt, DPPAnswerSubmission, Test, TestQuestion, 
+                           TestAttempt, TestAnswerSubmission)
 
 # ==================== AUTHENTICATION ====================
 def login_required(f):

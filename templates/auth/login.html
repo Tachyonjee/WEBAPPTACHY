@@ -3,69 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Coaching App</title>
+    <title>Login - Tachyon Institute Management System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
         }
         .login-card {
             background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
             overflow: hidden;
+            max-width: 500px;
         }
         .login-header {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             text-align: center;
-            padding: 2rem;
+            padding: 2.5rem 2rem;
+        }
+        .institute-logo {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
         }
         .form-floating .form-control {
             border: 2px solid #e9ecef;
             border-radius: 10px;
+            transition: all 0.3s ease;
         }
         .form-floating .form-control:focus {
-            border-color: #4facfe;
-            box-shadow: 0 0 0 0.2rem rgba(79, 172, 254, 0.25);
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
         }
         .btn-login {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
             border-radius: 10px;
             padding: 15px;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 1px;
+            transition: transform 0.3s ease;
         }
         .btn-login:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(79, 172, 254, 0.3);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
         }
-        .credentials-card {
+        .credentials-section {
             background: #f8f9fa;
-            border-radius: 10px;
-            padding: 1rem;
-            margin-top: 1.5rem;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+        .role-group {
+            margin-bottom: 1rem;
+        }
+        .role-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #495057;
         }
         .credential-item {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
+            color: #6c757d;
             margin-bottom: 0.25rem;
+            font-family: 'Courier New', monospace;
+            background: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 5px;
+            border-left: 3px solid;
         }
+        .cred-security { border-left-color: #dc3545; }
+        .cred-reception { border-left-color: #fd7e14; }
+        .cred-coordinator { border-left-color: #ffc107; }
+        .cred-management { border-left-color: #28a745; }
+        .cred-student { border-left-color: #007bff; }
+        .cred-parent { border-left-color: #6f42c1; }
+        .cred-mentor { border-left-color: #20c997; }
+        .cred-admin { border-left-color: #6c757d; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-6 col-lg-5">
+            <div class="col-md-8 col-lg-6">
                 <div class="login-card">
                     <div class="login-header">
-                        <h3><i class="bi bi-mortarboard me-2"></i>Coaching Platform</h3>
-                        <p class="mb-0">Welcome Back!</p>
+                        <div class="institute-logo">🏫</div>
+                        <h3 class="mb-2">Tachyon Institute</h3>
+                        <p class="mb-0 opacity-75">Management System</p>
                     </div>
                     
                     <div class="card-body p-4">
@@ -92,28 +122,52 @@
                             </div>
                             
                             <button type="submit" class="btn btn-primary btn-login w-100 mb-3">
-                                <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Sign In to Institute
                             </button>
                         </form>
                         
-                        <div class="credentials-card">
-                            <h6 class="text-muted mb-2"><i class="bi bi-info-circle me-1"></i>Demo Credentials</h6>
+                        <div class="credentials-section">
+                            <h6 class="text-center mb-3"><i class="bi bi-info-circle me-1"></i>Demo Login Credentials</h6>
+                            
                             <div class="row">
-                                <div class="col-6">
-                                    <strong class="text-primary">Students:</strong>
-                                    <div class="credential-item">student1 / student123</div>
-                                    <div class="credential-item">student2 / student123</div>
+                                <div class="col-md-6">
+                                    <div class="role-group">
+                                        <div class="role-title">🔒 Security & Reception</div>
+                                        <div class="credential-item cred-security">security1 / security123</div>
+                                        <div class="credential-item cred-reception">reception1 / reception123</div>
+                                    </div>
                                     
-                                    <strong class="text-success mt-2 d-block">Mentors:</strong>
-                                    <div class="credential-item">mentor1 / mentor123</div>
+                                    <div class="role-group">
+                                        <div class="role-title">👨‍💼 Coordinators</div>
+                                        <div class="credential-item cred-coordinator">admin_coord1 / admin123</div>
+                                        <div class="credential-item cred-coordinator">academic_coord1 / academic123</div>
+                                    </div>
+                                    
+                                    <div class="role-group">
+                                        <div class="role-title">🎓 Management</div>
+                                        <div class="credential-item cred-management">principal / principal123</div>
+                                        <div class="credential-item cred-management">director / director123</div>
+                                    </div>
                                 </div>
-                                <div class="col-6">
-                                    <strong class="text-warning">Operators:</strong>
-                                    <div class="credential-item">operator1 / operator123</div>
-                                    <div class="credential-item">operator2 / operator123</div>
+                                
+                                <div class="col-md-6">
+                                    <div class="role-group">
+                                        <div class="role-title">👨‍🎓 Students</div>
+                                        <div class="credential-item cred-student">rahul2025 / rahul2025123</div>
+                                        <div class="credential-item cred-student">priya2025 / priya2025123</div>
+                                    </div>
                                     
-                                    <strong class="text-danger mt-2 d-block">Admin:</strong>
-                                    <div class="credential-item">admin / admin123</div>
+                                    <div class="role-group">
+                                        <div class="role-title">👨‍👩‍👧‍👦 Parents</div>
+                                        <div class="credential-item cred-parent">p_rahul2025 / p_rahul2025123</div>
+                                        <div class="credential-item cred-parent">p_priya2025 / p_priya2025123</div>
+                                    </div>
+                                    
+                                    <div class="role-group">
+                                        <div class="role-title">👩‍🏫 Faculty</div>
+                                        <div class="credential-item cred-mentor">mentor_physics / mentor123</div>
+                                        <div class="credential-item cred-admin">admin / admin123</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

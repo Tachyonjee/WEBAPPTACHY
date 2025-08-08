@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 """
-Quick demo launcher for the coaching app frontend with authentication
+Tachyon Institute Management System Launcher
 """
 import subprocess
 import sys
 import os
 
 def main():
-    print("Starting Coaching App with Authentication...")
-    print("This will redirect to the integrated app with login functionality.")
+    print("Starting Tachyon Institute Management System...")
+    print("Comprehensive educational institute management platform.")
     
-    # Run the integrated app
+    # Run the Tachyon app
     try:
-        subprocess.run([sys.executable, 'integrated_app.py'], check=True)
+        subprocess.run([sys.executable, 'tachyon_app.py'], check=True)
     except KeyboardInterrupt:
         print("\nServer stopped.")
     except Exception as e:

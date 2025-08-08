@@ -1,7 +1,7 @@
-# JEE/NEET Coaching App
+# Tachyon Institute Management System
 
 ## Project Overview
-A comprehensive JEE/NEET coaching app with Flask backend featuring adaptive learning, PWA capabilities, interactive practice sessions, gamification, and modern JavaScript frontend architecture.
+A comprehensive full-stack management system for "Tachyon Institute of Science" integrating Visitor Management, Admissions, Academics, Gamification, and Role-Based Dashboards into a unified ecosystem. Built with Flask backend, PostgreSQL database, and API-first design for both web and mobile applications.
 
 ## Architecture Status (98% Complete)
 ### ✅ Completed Features
@@ -31,7 +31,14 @@ A comprehensive JEE/NEET coaching app with Flask backend featuring adaptive lear
 - Prioritize functionality over minor warnings
 
 ## Recent Changes
-- **2025-01-08**: **MANDATORY AUTHENTICATION SYSTEM COMPLETED**: Integrated authentication with main demo app:
+- **2025-01-08**: **TACHYON INSTITUTE SYSTEM TRANSFORMATION**: Evolved from coaching app to comprehensive institute management:
+  - **Visitor & Enquiry Management**: Security check-in/out, reception workflow, meeting management, follow-up tracking
+  - **Admission Management**: Full application process, document handling, student/parent account auto-creation
+  - **Role-Based System**: 10+ roles (security, reception, counsellor, coordinators, management, students, parents, mentors)
+  - **Academic Management**: Class scheduling, DPP generation, assessment system, attendance tracking
+  - **API-First Design**: RESTful endpoints for web and future mobile app integration
+  - **Modular Architecture**: Flask blueprints for scalable feature development
+- **2025-01-08**: **AUTHENTICATION INTEGRATION COMPLETE**: Integrated authentication with main demo app:
   - App now requires login before accessing any features - no anonymous access
   - Automatic role-based redirection after login to appropriate dashboards
   - Fixed logout functionality with proper session management
