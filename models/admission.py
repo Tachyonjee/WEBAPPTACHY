@@ -1,27 +1,7 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, ForeignKey, Date, Enum
+from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, ForeignKey, Date
 from sqlalchemy.orm import relationship
 from extensions import db
-import enum
-
-class AdmissionStatus(enum.Enum):
-    ENQUIRY = "enquiry"
-    APPLICATION_SUBMITTED = "application_submitted"
-    DOCUMENTS_PENDING = "documents_pending"
-    DOCUMENTS_VERIFIED = "documents_verified"
-    FEES_PENDING = "fees_pending"
-    ADMITTED = "admitted"
-    REJECTED = "rejected"
-
-class BloodGroup(enum.Enum):
-    A_POSITIVE = "A+"
-    A_NEGATIVE = "A-"
-    B_POSITIVE = "B+"
-    B_NEGATIVE = "B-"
-    AB_POSITIVE = "AB+"
-    AB_NEGATIVE = "AB-"
-    O_POSITIVE = "O+"
-    O_NEGATIVE = "O-"
 
 class AdmissionApplication(db.Model):
     __tablename__ = 'admission_applications'
@@ -34,7 +14,7 @@ class AdmissionApplication(db.Model):
     class_applied = Column(String(20), nullable=False)  # Class 11, 12, etc.
     batch_type = Column(String(50), nullable=False)  # JEE, NEET, Foundation
     date_of_birth = Column(Date, nullable=False)
-    blood_group = Column(Enum(BloodGroup))
+    blood_group = Column(String(5))
     
     # Contact Information
     student_mobile = Column(String(15))
@@ -47,7 +27,7 @@ class AdmissionApplication(db.Model):
     parent_email = Column(String(120))
     
     # Application Status
-    status = Column(Enum(AdmissionStatus), default=AdmissionStatus.ENQUIRY)
+    status = Column(String(30), default='enquiry')
     application_date = Column(DateTime, default=datetime.now)
     admission_date = Column(DateTime)
     
@@ -103,12 +83,12 @@ class AdmissionDocument(db.Model):
     
     uploaded_at = Column(DateTime, default=datetime.now)
     uploaded_by_id = Column(Integer, ForeignKey('users.id'))
-    uploaded_by = relationship("User")
+    # uploaded_by = relationship("User")
     
     verified = Column(Boolean, default=False)
     verified_at = Column(DateTime)
     verified_by_id = Column(Integer, ForeignKey('users.id'))
-    verified_by = relationship("User", foreign_keys=[verified_by_id])
+    # verified_by = relationship("User", foreign_keys=[verified_by_id])
     
     def __repr__(self):
         return f'<AdmissionDocument {self.document_type} for {self.application.student_name}>'
@@ -127,7 +107,7 @@ class AssessmentResult(db.Model):
     
     conducted_at = Column(DateTime, default=datetime.now)
     conducted_by_id = Column(Integer, ForeignKey('users.id'))
-    conducted_by = relationship("User")
+    # conducted_by = relationship("User")
     
     notes = Column(Text)
     

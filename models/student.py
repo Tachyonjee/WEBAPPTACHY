@@ -185,10 +185,10 @@ class StudentAttendance(db.Model):
     
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    user = relationship("User", backref="attendance_records")
+    user = relationship("User", foreign_keys=[user_id], backref="attendance_records")
     
     class_id = Column(Integer, ForeignKey('classes.id'), nullable=False)
-    class_session = relationship("Class", backref="attendance_records")
+    # class_session = relationship("Class", backref="attendance_records")
     
     # Attendance status
     status = Column(String(20), default='present')  # present, absent, late

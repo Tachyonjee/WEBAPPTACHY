@@ -11,7 +11,7 @@ from werkzeug.utils import secure_filename
 from extensions import db
 from models.user import User
 from models.student import StudentProgress
-from models.admission import AdmissionApplication, AdmissionDocument, AssessmentResult, AdmissionStatus
+from models.admission import AdmissionApplication, AdmissionDocument, AssessmentResult
 
 admission_bp = Blueprint('admission', __name__, url_prefix='/admission')
 
@@ -92,7 +92,7 @@ def reception_dashboard():
     
     # Get applications by status
     pending_applications = AdmissionApplication.query.filter(
-        AdmissionApplication.status.in_([AdmissionStatus.ENQUIRY, AdmissionStatus.APPLICATION_SUBMITTED])
+        AdmissionApplication.status.in_(['enquiry', 'application_submitted'])
     ).count()
     
     return render_template('admission/reception_dashboard.html',
@@ -110,11 +110,11 @@ def process_application(application_id):
         action = data.get('action')
         
         if action == 'approve_documents':
-            application.status = AdmissionStatus.DOCUMENTS_VERIFIED
+            application.status = 'documents_verified'
             application.processed_by_id = session['user_id']
             
         elif action == 'request_documents':
-            application.status = AdmissionStatus.DOCUMENTS_PENDING
+            application.status = 'documents_pending'
             
         elif action == 'admit_student':
             # Create student and parent accounts
@@ -167,7 +167,7 @@ def process_application(application_id):
             # Update application
             application.student_user_id = student_user.id
             application.parent_user_id = parent_user.id
-            application.status = AdmissionStatus.ADMITTED
+            application.status = 'admitted'
             application.admission_date = datetime.now()
             application.processed_by_id = session['user_id']
             
@@ -301,7 +301,7 @@ def api_applications():
     query = AdmissionApplication.query
     
     if status_filter:
-        query = query.filter(AdmissionApplication.status == AdmissionStatus(status_filter))
+        query = query.filter(AdmissionApplication.status == status_filter)
     
     applications = query.order_by(AdmissionApplication.application_date.desc()).paginate(
         page=page, per_page=per_page, error_out=False
@@ -340,13 +340,13 @@ def api_admission_statistics():
             AdmissionApplication.application_date >= this_month
         ).count(),
         'admitted_students': AdmissionApplication.query.filter(
-            AdmissionApplication.status == AdmissionStatus.ADMITTED
+            AdmissionApplication.status == 'admitted'
         ).count(),
         'pending_applications': AdmissionApplication.query.filter(
             AdmissionApplication.status.in_([
-                AdmissionStatus.ENQUIRY,
-                AdmissionStatus.APPLICATION_SUBMITTED,
-                AdmissionStatus.DOCUMENTS_PENDING
+                'enquiry',
+                'application_submitted', 
+                'documents_pending'
             ])
         ).count()
     }
