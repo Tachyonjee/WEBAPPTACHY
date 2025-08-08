@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Students - Coaching App{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">My Students</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Goal Exam</th>
+                        <th>Batch</th>
+                        <th>Performance</th>
+                        <th>Last Active</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                    <tr>
+                        <td>{{ student.full_name }}</td>
+                        <td><span class="badge bg-info">{{ student.goal_exam }}</span></td>
+                        <td>{{ student.batch_name }}</td>
+                        <td>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar" style="width: {{ 60 + (loop.index * 5) }}%"></div>
+                            </div>
+                        </td>
+                        <td><small class="text-muted">{{ loop.index }} hrs ago</small></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary">View Details</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

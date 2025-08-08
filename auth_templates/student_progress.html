@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Progress - Coaching App{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Learning Progress</h5>
+    </div>
+    <div class="card-body">
+        <p>Track your learning journey and performance over time.</p>
+        {% if progress %}
+        <div class="row">
+            <div class="col-md-3">
+                <div class="text-center">
+                    <h4>{{ progress.total_points }}</h4>
+                    <small class="text-muted">Total Points</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center">
+                    <h4>{{ progress.current_streak }}</h4>
+                    <small class="text-muted">Current Streak</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center">
+                    <h4>{{ progress.questions_attempted }}</h4>
+                    <small class="text-muted">Questions Attempted</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center">
+                    <h4>{{ "%.1f"|format((progress.questions_correct / progress.questions_attempted * 100) if progress.questions_attempted > 0 else 0) }}%</h4>
+                    <small class="text-muted">Accuracy</small>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Coaching App{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card bg-danger text-white">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h4 class="mb-1">{{ user.full_name }}</h4>
+                        <p class="mb-0 opacity-75">System Administrator • {{ user.department }} Department</p>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-gear" style="font-size: 3rem; opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="bi bi-people-fill text-primary mb-2" style="font-size: 2rem;"></i>
+                <h3 class="fw-bold">{{ total_users }}</h3>
+                <p class="text-muted mb-0">Total Users</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="bi bi-person-graduation text-success mb-2" style="font-size: 2rem;"></i>
+                <h3 class="fw-bold">{{ total_students }}</h3>
+                <p class="text-muted mb-0">Students</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="bi bi-person-check text-info mb-2" style="font-size: 2rem;"></i>
+                <h3 class="fw-bold">{{ total_mentors }}</h3>
+                <p class="text-muted mb-0">Mentors</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="bi bi-tools text-warning mb-2" style="font-size: 2rem;"></i>
+                <h3 class="fw-bold">{{ total_operators }}</h3>
+                <p class="text-muted mb-0">Operators</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">System Overview</h5>
+                <a href="{{ url_for('admin_reports') }}" class="btn btn-sm btn-outline-primary">View Reports</a>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6>User Growth (Last 30 Days)</h6>
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-graph-up text-success me-2"></i>
+                            <span class="h4 text-success mb-0">+12%</span>
+                            <small class="text-muted ms-2">{{ total_students + 5 }} new students</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Platform Activity</h6>
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-activity text-primary me-2"></i>
+                            <span class="h4 text-primary mb-0">89%</span>
+                            <small class="text-muted ms-2">Daily active users</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-sm-6 mb-3">
+                        <a href="{{ url_for('admin_users') }}" class="btn btn-primary w-100 py-3">
+                            <i class="bi bi-people me-2"></i>
+                            <div>
+                                <div class="fw-bold">Manage Users</div>
+                                <small class="opacity-75">View all accounts</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-sm-6 mb-3">
+                        <button class="btn btn-success w-100 py-3">
+                            <i class="bi bi-plus-circle me-2"></i>
+                            <div>
+                                <div class="fw-bold">Add User</div>
+                                <small class="opacity-75">Create new account</small>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="col-sm-6 mb-3">
+                        <button class="btn btn-warning w-100 py-3">
+                            <i class="bi bi-gear me-2"></i>
+                            <div>
+                                <div class="fw-bold">System Settings</div>
+                                <small class="opacity-75">Configure platform</small>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="col-sm-6 mb-3">
+                        <a href="{{ url_for('admin_reports') }}" class="btn btn-info w-100 py-3">
+                            <i class="bi bi-file-earmark-text me-2"></i>
+                            <div>
+                                <div class="fw-bold">Reports</div>
+                                <small class="opacity-75">Analytics & insights</small>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">System Status</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div>
+                        <div class="fw-medium">Database</div>
+                        <small class="text-muted">PostgreSQL</small>
+                    </div>
+                    <span class="badge bg-success">Online</span>
+                </div>
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div>
+                        <div class="fw-medium">Application Server</div>
+                        <small class="text-muted">Flask</small>
+                    </div>
+                    <span class="badge bg-success">Running</span>
+                </div>
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div>
+                        <div class="fw-medium">Storage</div>
+                        <small class="text-muted">78% used</small>
+                    </div>
+                    <span class="badge bg-warning">Moderate</span>
+                </div>
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="fw-medium">Memory Usage</div>
+                        <small class="text-muted">45% used</small>
+                    </div>
+                    <span class="badge bg-success">Good</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0">Recent Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
+                        <i class="bi bi-person-plus" style="font-size: 0.8rem;"></i>
+                    </div>
+                    <div>
+                        <div class="fw-medium small">User Created</div>
+                        <small class="text-muted">5 min ago</small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
+                        <i class="bi bi-gear" style="font-size: 0.8rem;"></i>
+                    </div>
+                    <div>
+                        <div class="fw-medium small">Settings Updated</div>
+                        <small class="text-muted">1 hour ago</small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
+                        <i class="bi bi-file-text" style="font-size: 0.8rem;"></i>
+                    </div>
+                    <div>
+                        <div class="fw-medium small">Report Generated</div>
+                        <small class="text-muted">3 hours ago</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Role Distribution</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h6>Students</h6>
+                            <div class="progress mb-2" style="height: 8px;">
+                                <div class="progress-bar" style="width: {{ (total_students / total_users * 100)|round }}%"></div>
+                            </div>
+                            <small class="text-muted">{{ "%.1f"|format(total_students / total_users * 100) }}% of total users</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h6>Mentors</h6>
+                            <div class="progress mb-2" style="height: 8px;">
+                                <div class="progress-bar bg-success" style="width: {{ (total_mentors / total_users * 100)|round }}%"></div>
+                            </div>
+                            <small class="text-muted">{{ "%.1f"|format(total_mentors / total_users * 100) }}% of total users</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h6>Operators</h6>
+                            <div class="progress mb-2" style="height: 8px;">
+                                <div class="progress-bar bg-warning" style="width: {{ (total_operators / total_users * 100)|round }}%"></div>
+                            </div>
+                            <small class="text-muted">{{ "%.1f"|format(total_operators / total_users * 100) }}% of total users</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h6>Admins</h6>
+                            <div class="progress mb-2" style="height: 8px;">
+                                <div class="progress-bar bg-danger" style="width: {{ (1 / total_users * 100)|round }}%"></div>
+                            </div>
+                            <small class="text-muted">{{ "%.1f"|format(1 / total_users * 100) }}% of total users</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

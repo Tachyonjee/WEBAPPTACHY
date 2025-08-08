@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block title %}Mentor Dashboard - Coaching App{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h4 class="mb-1">{{ user.full_name }}</h4>
+                        <p class="mb-0 opacity-75">{{ user.specialization }} Mentor • {{ user.department }} Department</p>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-person-check" style="font-size: 3rem; opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="bi bi-people-fill text-primary mb-2" style="font-size: 2rem;"></i>
+                <h3 class="fw-bold">{{ students|length }}</h3>
+                <p class="text-muted mb-0">Assigned Students</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="bi bi-question-circle-fill text-warning mb-2" style="font-size: 2rem;"></i>
+                <h3 class="fw-bold">8</h3>
+                <p class="text-muted mb-0">Pending Doubts</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="bi bi-chat-dots-fill text-info mb-2" style="font-size: 2rem;"></i>
+                <h3 class="fw-bold">12</h3>
+                <p class="text-muted mb-0">Resolved Today</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="bi bi-star-fill text-success mb-2" style="font-size: 2rem;"></i>
+                <h3 class="fw-bold">4.8</h3>
+                <p class="text-muted mb-0">Rating</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">My Students Progress</h5>
+                <a href="{{ url_for('mentor_students') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Goal</th>
+                                <th>Progress</th>
+                                <th>Last Active</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students[:5] %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+                                            {{ student.full_name[0] }}
+                                        </div>
+                                        {{ student.full_name }}
+                                    </div>
+                                </td>
+                                <td><span class="badge bg-info">{{ student.goal_exam }}</span></td>
+                                <td>
+                                    <div class="progress" style="height: 6px;">
+                                        <div class="progress-bar" style="width: {{ 60 + (loop.index * 7) }}%"></div>
+                                    </div>
+                                    <small class="text-muted">{{ 60 + (loop.index * 7) }}%</small>
+                                </td>
+                                <td><small class="text-muted">{{ loop.index }} hrs ago</small></td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">View</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Recent Doubts</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-start mb-3 pb-3 border-bottom">
+                    <div class="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                        <i class="bi bi-question"></i>
+                    </div>
+                    <div class="flex-fill">
+                        <div class="fw-medium">Quadratic Equations</div>
+                        <small class="text-muted">By Rahul Sharma</small>
+                        <div class="mt-1">
+                            <span class="badge bg-warning">Pending</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex align-items-start mb-3 pb-3 border-bottom">
+                    <div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                        <i class="bi bi-question"></i>
+                    </div>
+                    <div class="flex-fill">
+                        <div class="fw-medium">Integration Methods</div>
+                        <small class="text-muted">By Priya Patel</small>
+                        <div class="mt-1">
+                            <span class="badge bg-primary">In Progress</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex align-items-start">
+                    <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                        <i class="bi bi-check"></i>
+                    </div>
+                    <div class="flex-fill">
+                        <div class="fw-medium">Trigonometry</div>
+                        <small class="text-muted">By Arjun Singh</small>
+                        <div class="mt-1">
+                            <span class="badge bg-success">Resolved</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Quick Actions</h5>
+                <a href="{{ url_for('mentor_analytics') }}" class="btn btn-outline-primary">
+                    <i class="bi bi-bar-chart me-1"></i>View Analytics
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <button class="btn btn-outline-primary w-100 py-3">
+                            <i class="bi bi-chat-dots me-2"></i>
+                            <div>
+                                <div class="fw-bold">Answer Doubts</div>
+                                <small class="opacity-75">Help students</small>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <button class="btn btn-outline-success w-100 py-3">
+                            <i class="bi bi-calendar-event me-2"></i>
+                            <div>
+                                <div class="fw-bold">Schedule Session</div>
+                                <small class="opacity-75">Plan mentoring</small>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <button class="btn btn-outline-info w-100 py-3">
+                            <i class="bi bi-graph-up me-2"></i>
+                            <div>
+                                <div class="fw-bold">Track Progress</div>
+                                <small class="opacity-75">Student analytics</small>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <button class="btn btn-outline-warning w-100 py-3">
+                            <i class="bi bi-journal-text me-2"></i>
+                            <div>
+                                <div class="fw-bold">Create Content</div>
+                                <small class="opacity-75">Add study material</small>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard - Coaching App{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h4 class="mb-1">Welcome back, {{ user.full_name }}!</h4>
+                        <p class="mb-0 opacity-75">{{ user.goal_exam }} • {{ user.batch_name }}</p>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-mortarboard" style="font-size: 3rem; opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="bi bi-star-fill text-warning mb-2" style="font-size: 2rem;"></i>
+                <h3 class="fw-bold">{{ progress.total_points }}</h3>
+                <p class="text-muted mb-0">Total Points</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="bi bi-fire text-danger mb-2" style="font-size: 2rem;"></i>
+                <h3 class="fw-bold">{{ progress.current_streak }}</h3>
+                <p class="text-muted mb-0">Current Streak</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="bi bi-check-circle-fill text-success mb-2" style="font-size: 2rem;"></i>
+                <h3 class="fw-bold">{{ progress.questions_correct }}</h3>
+                <p class="text-muted mb-0">Correct Answers</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="bi bi-clipboard-data text-info mb-2" style="font-size: 2rem;"></i>
+                <h3 class="fw-bold">{{ "%.1f"|format((progress.questions_correct / progress.questions_attempted * 100) if progress.questions_attempted > 0 else 0) }}%</h3>
+                <p class="text-muted mb-0">Accuracy</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Quick Actions</h5>
+                <i class="bi bi-lightning-charge text-primary"></i>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-6 mb-3">
+                        <a href="{{ url_for('student_practice') }}" class="btn btn-primary w-100 py-3">
+                            <i class="bi bi-pencil-square me-2"></i>
+                            <div>
+                                <div class="fw-bold">Start Practice</div>
+                                <small class="opacity-75">Solve new questions</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-sm-6 mb-3">
+                        <a href="{{ url_for('student_progress') }}" class="btn btn-success w-100 py-3">
+                            <i class="bi bi-graph-up me-2"></i>
+                            <div>
+                                <div class="fw-bold">View Progress</div>
+                                <small class="opacity-75">Track your performance</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-sm-6 mb-3">
+                        <a href="{{ url_for('student_doubts') }}" class="btn btn-warning w-100 py-3">
+                            <i class="bi bi-question-circle me-2"></i>
+                            <div>
+                                <div class="fw-bold">Ask Doubts</div>
+                                <small class="opacity-75">Get help from mentors</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-sm-6 mb-3">
+                        <a href="#" class="btn btn-info w-100 py-3">
+                            <i class="bi bi-bookmark me-2"></i>
+                            <div>
+                                <div class="fw-bold">Bookmarks</div>
+                                <small class="opacity-75">Review saved questions</small>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Recent Activity</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                        <i class="bi bi-check"></i>
+                    </div>
+                    <div>
+                        <div class="fw-medium">Completed Math Practice</div>
+                        <small class="text-muted">2 hours ago</small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                        <i class="bi bi-book"></i>
+                    </div>
+                    <div>
+                        <div class="fw-medium">Physics Lecture Attended</div>
+                        <small class="text-muted">Yesterday</small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div class="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                        <i class="bi bi-question"></i>
+                    </div>
+                    <div>
+                        <div class="fw-medium">Doubt Resolved</div>
+                        <small class="text-muted">2 days ago</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Performance Overview</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% if user.goal_exam == 'JEE' %}
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <h6>Mathematics</h6>
+                                <div class="progress mb-2" style="height: 8px;">
+                                    <div class="progress-bar" style="width: 85%"></div>
+                                </div>
+                                <small class="text-muted">85% mastery</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <h6>Physics</h6>
+                                <div class="progress mb-2" style="height: 8px;">
+                                    <div class="progress-bar bg-success" style="width: 78%"></div>
+                                </div>
+                                <small class="text-muted">78% mastery</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <h6>Chemistry</h6>
+                                <div class="progress mb-2" style="height: 8px;">
+                                    <div class="progress-bar bg-warning" style="width: 72%"></div>
+                                </div>
+                                <small class="text-muted">72% mastery</small>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h6>Physics</h6>
+                                <div class="progress mb-2" style="height: 8px;">
+                                    <div class="progress-bar" style="width: 82%"></div>
+                                </div>
+                                <small class="text-muted">82% mastery</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h6>Chemistry</h6>
+                                <div class="progress mb-2" style="height: 8px;">
+                                    <div class="progress-bar bg-success" style="width: 79%"></div>
+                                </div>
+                                <small class="text-muted">79% mastery</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h6>Biology</h6>
+                                <div class="progress mb-2" style="height: 8px;">
+                                    <div class="progress-bar bg-info" style="width: 88%"></div>
+                                </div>
+                                <small class="text-muted">88% mastery</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h6>Mathematics</h6>
+                                <div class="progress mb-2" style="height: 8px;">
+                                    <div class="progress-bar bg-warning" style="width: 65%"></div>
+                                </div>
+                                <small class="text-muted">65% mastery</small>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

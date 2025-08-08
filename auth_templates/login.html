@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Coaching App{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="card">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <i class="bi bi-mortarboard-fill text-primary" style="font-size: 3rem;"></i>
+                    <h3 class="fw-bold mt-3">Welcome Back</h3>
+                    <p class="text-muted">Sign in to access your account</p>
+                </div>
+                
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person"></i></span>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="password" class="form-label">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100 py-2">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                    </button>
+                </form>
+                
+                <div class="mt-4 pt-4 border-top">
+                    <p class="text-center text-muted mb-3">
+                        <small>Demo Accounts</small>
+                    </p>
+                    
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <button type="button" class="btn btn-outline-primary btn-sm w-100" onclick="fillLogin('student1', 'student123')">
+                                <i class="bi bi-person-circle me-1"></i>Student
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button type="button" class="btn btn-outline-success btn-sm w-100" onclick="fillLogin('mentor1', 'mentor123')">
+                                <i class="bi bi-person-check me-1"></i>Mentor
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button type="button" class="btn btn-outline-warning btn-sm w-100" onclick="fillLogin('operator1', 'operator123')">
+                                <i class="bi bi-tools me-1"></i>Operator
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button type="button" class="btn btn-outline-danger btn-sm w-100" onclick="fillLogin('admin', 'admin123')">
+                                <i class="bi bi-gear me-1"></i>Admin
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function fillLogin(username, password) {
+    document.getElementById('username').value = username;
+    document.getElementById('password').value = password;
+}
+</script>
+{% endblock %}

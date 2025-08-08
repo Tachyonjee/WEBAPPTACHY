@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}Operator Dashboard - Coaching App{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h4 class="mb-1">{{ user.full_name }}</h4>
+                        <p class="mb-0 opacity-75">Content Operator • {{ user.department }} Department</p>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-tools" style="font-size: 3rem; opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="bi bi-journal-text text-primary mb-2" style="font-size: 2rem;"></i>
+                <h3 class="fw-bold">{{ total_questions }}</h3>
+                <p class="text-muted mb-0">Total Questions</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="bi bi-clock-fill text-warning mb-2" style="font-size: 2rem;"></i>
+                <h3 class="fw-bold">{{ pending_qc }}</h3>
+                <p class="text-muted mb-0">Pending QC</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="bi bi-people-fill text-success mb-2" style="font-size: 2rem;"></i>
+                <h3 class="fw-bold">{{ total_students }}</h3>
+                <p class="text-muted mb-0">Active Students</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="bi bi-upload text-info mb-2" style="font-size: 2rem;"></i>
+                <h3 class="fw-bold">15</h3>
+                <p class="text-muted mb-0">Today's Uploads</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Content Management</h5>
+                <a href="{{ url_for('operator_questions') }}" class="btn btn-sm btn-outline-primary">Manage All</a>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-6 mb-3">
+                        <a href="{{ url_for('operator_questions') }}" class="btn btn-primary w-100 py-3">
+                            <i class="bi bi-plus-circle me-2"></i>
+                            <div>
+                                <div class="fw-bold">Add Question</div>
+                                <small class="opacity-75">Create new content</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-sm-6 mb-3">
+                        <a href="{{ url_for('operator_uploads') }}" class="btn btn-success w-100 py-3">
+                            <i class="bi bi-upload me-2"></i>
+                            <div>
+                                <div class="fw-bold">Bulk Upload</div>
+                                <small class="opacity-75">Import from CSV/Excel</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-sm-6 mb-3">
+                        <button class="btn btn-warning w-100 py-3">
+                            <i class="bi bi-check-circle me-2"></i>
+                            <div>
+                                <div class="fw-bold">Quality Control</div>
+                                <small class="opacity-75">Review pending items</small>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="col-sm-6 mb-3">
+                        <button class="btn btn-info w-100 py-3">
+                            <i class="bi bi-search me-2"></i>
+                            <div>
+                                <div class="fw-bold">Search & Edit</div>
+                                <small class="opacity-75">Find and modify</small>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Recent Activity</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                        <i class="bi bi-check"></i>
+                    </div>
+                    <div>
+                        <div class="fw-medium">Physics Questions Approved</div>
+                        <small class="text-muted">15 minutes ago</small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                        <i class="bi bi-upload"></i>
+                    </div>
+                    <div>
+                        <div class="fw-medium">Math CSV Uploaded</div>
+                        <small class="text-muted">1 hour ago</small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                        <i class="bi bi-pencil"></i>
+                    </div>
+                    <div>
+                        <div class="fw-medium">Chemistry Questions Edited</div>
+                        <small class="text-muted">2 hours ago</small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                        <i class="bi bi-eye"></i>
+                    </div>
+                    <div>
+                        <div class="fw-medium">Quality Review Completed</div>
+                        <small class="text-muted">3 hours ago</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Subject-wise Distribution</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h6>Mathematics</h6>
+                            <div class="progress mb-2" style="height: 8px;">
+                                <div class="progress-bar" style="width: 75%"></div>
+                            </div>
+                            <small class="text-muted">75 questions</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h6>Physics</h6>
+                            <div class="progress mb-2" style="height: 8px;">
+                                <div class="progress-bar bg-success" style="width: 65%"></div>
+                            </div>
+                            <small class="text-muted">65 questions</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h6>Chemistry</h6>
+                            <div class="progress mb-2" style="height: 8px;">
+                                <div class="progress-bar bg-warning" style="width: 58%"></div>
+                            </div>
+                            <small class="text-muted">58 questions</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h6>Biology</h6>
+                            <div class="progress mb-2" style="height: 8px;">
+                                <div class="progress-bar bg-info" style="width: 42%"></div>
+                            </div>
+                            <small class="text-muted">42 questions</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
