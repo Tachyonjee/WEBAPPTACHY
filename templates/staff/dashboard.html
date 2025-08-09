@@ -57,7 +57,7 @@
                                 <button class="btn btn-success">View Visitor Log</button>
                             {% elif user.role == 'reception' %}
                                 <a href="{{ url_for('visitor.reception_dashboard') }}" class="btn btn-primary">Visitor Management</a>
-                                <a href="{{ url_for('admission.reception_dashboard') }}" class="btn btn-success">Admission Management</a>
+                                <a href="{{ url_for('admission_management.reception_dashboard') }}" class="btn btn-success">Admission Management</a>
                             {% endif %}
                             <button class="btn btn-info">Reports</button>
                             <button class="btn btn-warning">Settings</button>

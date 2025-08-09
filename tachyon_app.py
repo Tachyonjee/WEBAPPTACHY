@@ -44,10 +44,10 @@ with app.app_context():
 
 # Register blueprints
 from blueprints.visitor_management import visitor_bp
-from blueprints.admission_management import admission_bp
+from blueprints.admission_management import admission_bp as admission_management_bp
 
 app.register_blueprint(visitor_bp)
-app.register_blueprint(admission_bp)
+app.register_blueprint(admission_management_bp)
 
 # ==================== AUTHENTICATION ====================
 def login_required(f):

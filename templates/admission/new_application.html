@@ -1,0 +1,225 @@
+{% extends "shared/base.html" %}
+{% block title %}New Admission Application{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4>New Admission Application</h4>
+                    <small class="text-muted">Please fill in all required information</small>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        {{ csrf_token() }}
+                        
+                        <!-- Student Information -->
+                        <h5 class="mb-3">Student Information</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="student_name" class="form-label">Full Name *</label>
+                                <input type="text" class="form-control" id="student_name" name="student_name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="date_of_birth" class="form-label">Date of Birth *</label>
+                                <input type="date" class="form-control" id="date_of_birth" name="date_of_birth" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="gender" class="form-label">Gender *</label>
+                                <select class="form-select" id="gender" name="gender" required>
+                                    <option value="">Select Gender</option>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="category" class="form-label">Category</label>
+                                <select class="form-select" id="category" name="category">
+                                    <option value="">Select Category</option>
+                                    <option value="general">General</option>
+                                    <option value="obc">OBC</option>
+                                    <option value="sc">SC</option>
+                                    <option value="st">ST</option>
+                                    <option value="ews">EWS</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Contact Information -->
+                        <h5 class="mb-3">Contact Information</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="email" class="form-label">Email *</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="phone" class="form-label">Phone Number *</label>
+                                <input type="tel" class="form-control" id="phone" name="phone" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Address *</label>
+                            <textarea class="form-control" id="address" name="address" rows="3" required></textarea>
+                        </div>
+
+                        <!-- Academic Information -->
+                        <h5 class="mb-3">Academic Information</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="last_school" class="form-label">Last School/College *</label>
+                                <input type="text" class="form-control" id="last_school" name="last_school" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="last_class" class="form-label">Last Class/Grade *</label>
+                                <select class="form-select" id="last_class" name="last_class" required>
+                                    <option value="">Select Class</option>
+                                    <option value="10th">10th</option>
+                                    <option value="11th">11th</option>
+                                    <option value="12th">12th</option>
+                                    <option value="12th_passed">12th Passed</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="percentage" class="form-label">Last Exam Percentage *</label>
+                                <input type="number" class="form-control" id="percentage" name="percentage" 
+                                       min="0" max="100" step="0.1" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="desired_course" class="form-label">Desired Course *</label>
+                                <select class="form-select" id="desired_course" name="desired_course" required>
+                                    <option value="">Select Course</option>
+                                    <option value="jee_main">JEE Main Preparation</option>
+                                    <option value="jee_advanced">JEE Advanced Preparation</option>
+                                    <option value="neet">NEET Preparation</option>
+                                    <option value="foundation_11">Foundation Class 11</option>
+                                    <option value="foundation_12">Foundation Class 12</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Parent Information -->
+                        <h5 class="mb-3">Parent/Guardian Information</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="father_name" class="form-label">Father's Name *</label>
+                                <input type="text" class="form-control" id="father_name" name="father_name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="mother_name" class="form-label">Mother's Name *</label>
+                                <input type="text" class="form-control" id="mother_name" name="mother_name" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="father_occupation" class="form-label">Father's Occupation</label>
+                                <input type="text" class="form-control" id="father_occupation" name="father_occupation">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="parent_phone" class="form-label">Parent Phone *</label>
+                                <input type="tel" class="form-control" id="parent_phone" name="parent_phone" required>
+                            </div>
+                        </div>
+
+                        <!-- Document Upload -->
+                        <h5 class="mb-3">Document Upload</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="photo" class="form-label">Student Photo</label>
+                                <input type="file" class="form-control" id="photo" name="photo" accept="image/*">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="id_proof" class="form-label">ID Proof (Aadhar/Birth Certificate)</label>
+                                <input type="file" class="form-control" id="id_proof" name="id_proof" 
+                                       accept=".pdf,.jpg,.jpeg,.png">
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="academic_docs" class="form-label">Academic Documents</label>
+                                <input type="file" class="form-control" id="academic_docs" name="academic_docs" 
+                                       accept=".pdf,.jpg,.jpeg,.png">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="category_certificate" class="form-label">Category Certificate (if applicable)</label>
+                                <input type="file" class="form-control" id="category_certificate" name="category_certificate" 
+                                       accept=".pdf,.jpg,.jpeg,.png">
+                            </div>
+                        </div>
+
+                        <!-- Additional Information -->
+                        <h5 class="mb-3">Additional Information</h5>
+                        <div class="mb-3">
+                            <label for="previous_coaching" class="form-label">Previous Coaching Experience (if any)</label>
+                            <textarea class="form-control" id="previous_coaching" name="previous_coaching" rows="2"></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="special_requirements" class="form-label">Special Requirements/Medical Conditions</label>
+                            <textarea class="form-control" id="special_requirements" name="special_requirements" rows="2"></textarea>
+                        </div>
+
+                        <!-- Declaration -->
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="declaration" name="declaration" required>
+                                <label class="form-check-label" for="declaration">
+                                    I hereby declare that all the information provided above is true and correct to the best of my knowledge. 
+                                    I understand that any false information may lead to cancellation of admission.
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('admission_management.reception_dashboard') if current_user.role == 'reception' else url_for('parent.dashboard') }}" 
+                               class="btn btn-secondary me-md-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Submit Application</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Add form validation and dynamic behavior
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-calculate age from date of birth
+    const dobInput = document.getElementById('date_of_birth');
+    dobInput.addEventListener('change', function() {
+        const dob = new Date(this.value);
+        const today = new Date();
+        const age = Math.floor((today - dob) / (365.25 * 24 * 60 * 60 * 1000));
+        
+        if (age < 15 || age > 25) {
+            alert('Please verify the date of birth. Age should be between 15-25 for admission.');
+        }
+    });
+    
+    // Show/hide category certificate based on category selection
+    const categorySelect = document.getElementById('category');
+    const categoryFileDiv = document.getElementById('category_certificate').parentElement;
+    
+    categorySelect.addEventListener('change', function() {
+        if (this.value && this.value !== 'general') {
+            categoryFileDiv.style.display = 'block';
+            document.getElementById('category_certificate').required = true;
+        } else {
+            categoryFileDiv.style.display = 'none';
+            document.getElementById('category_certificate').required = false;
+        }
+    });
+});
+</script>
+{% endblock %}
