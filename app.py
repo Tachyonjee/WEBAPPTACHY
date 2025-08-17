@@ -38,6 +38,7 @@ def create_app():
     from controllers.syllabus import syllabus_bp
     from controllers.lectures import lectures_bp
     from controllers.mentor import mentor_bp
+    from controllers.operator import operator_bp 
     
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(students_bp, url_prefix='/api/students')
@@ -47,6 +48,7 @@ def create_app():
     app.register_blueprint(syllabus_bp, url_prefix='/api/syllabus')
     app.register_blueprint(lectures_bp, url_prefix='/api/lectures')
     app.register_blueprint(mentor_bp, url_prefix='/api/mentor')
+    app.register_blueprint(operator_bp, url_prefix='/api/operator')
     
     # Main routes
     @app.route('/')
